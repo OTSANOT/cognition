@@ -30,7 +30,7 @@
         /* Traditional Xuan Paper (宣紙) texture simulation using CSS gradients */
         .xuan-paper {
             background-color: var(--paper-bg);
-            background-image: 
+            background-image:
                 radial-gradient(rgba(180, 160, 130, 0.12) 1px, transparent 0),
                 radial-gradient(rgba(160, 140, 110, 0.08) 1px, transparent 0),
                 linear-gradient(to right, rgba(0,0,0,0.03) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.03) 100%);
@@ -42,7 +42,7 @@
         /* Gold-flecked paper option (灑金宣) */
         .xuan-gold {
             background-color: #f7eed6;
-            background-image: 
+            background-image:
                 radial-gradient(circle, rgba(212, 175, 55, 0.45) 1px, transparent 1.5px),
                 radial-gradient(circle, rgba(218, 165, 32, 0.3) 1.5px, transparent 2px),
                 linear-gradient(to bottom, rgba(212, 175, 55, 0.05), rgba(184, 134, 11, 0.08));
@@ -63,7 +63,7 @@
 
         /* Vertical Right-to-Left Sutra Grid */
         .sutra-scroll-container {
-            direction: rtl; /* Flows columns from right to left */
+            direction: rtl;
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
@@ -71,7 +71,7 @@
 
         .sutra-columns {
             display: flex;
-            flex-direction: row; /* In RTL, row goes Right -> Left */
+            flex-direction: row;
             direction: rtl;
             padding: 16px;
             gap: 6px;
@@ -97,29 +97,22 @@
         }
 
         @media (min-width: 768px) {
-            .char-cell {
-                width: 104px;
-                height: 104px;
-            }
+            .char-cell { width: 104px; height: 104px; }
         }
 
-        .char-cell:last-child {
-            border-bottom: none;
-        }
+        .char-cell:last-child { border-bottom: none; }
 
-        /* Subtle cross-hair (米字格 / 十字格) inside each character cell */
         .char-cell::before {
             content: '';
             position: absolute;
             inset: 0;
-            background-image: 
+            background-image:
                 linear-gradient(to right, transparent 49.2%, var(--grid-line) 49.5%, var(--grid-line) 50.5%, transparent 50.8%),
                 linear-gradient(to bottom, transparent 49.2%, var(--grid-line) 49.5%, var(--grid-line) 50.5%, transparent 50.8%);
             opacity: 0.45;
             pointer-events: none;
         }
 
-        /* Guide character watermark */
         .guide-char {
             font-size: 3.25rem;
             font-weight: 400;
@@ -131,39 +124,23 @@
         }
 
         @media (min-width: 768px) {
-            .guide-char {
-                font-size: 4.25rem;
-            }
+            .guide-char { font-size: 4.25rem; }
         }
 
-        /* Drawing canvas sits directly over the sutra grid */
         #writingCanvas {
             position: absolute;
             top: 0;
             left: 0;
             z-index: 10;
-            touch-action: none; /* Crucial for smooth touch/stylus writing without scrolling */
+            touch-action: none;
             cursor: crosshair;
         }
 
-        /* Custom scrollbar styling */
-        ::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(168, 145, 115, 0.5);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(168, 145, 115, 0.8);
-        }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(168, 145, 115, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(168, 145, 115, 0.8); }
 
-        /* Traditional Red Seal (印章) */
         .vermilion-seal {
             border: 2px solid #b82925;
             color: #b82925;
@@ -184,34 +161,30 @@
             </div>
             <div>
                 <h1 class="text-base md:text-lg font-bold tracking-widest text-[#f3ead8]">般若波羅蜜多心經</h1>
-                <p class="text-[11px] text-[#a89b8c] tracking-wider hidden sm:block">抄經 · 慢活修心（觸控手寫版）</p>
+                <p class="text-[11px] text-[#a89b8c] tracking-wider hidden sm:block">抄經 · 觸控手寫版</p>
             </div>
         </div>
 
         <!-- Mode & Brush Controls -->
         <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <!-- Mode Toggle: Write vs Scroll/Pan -->
-            <button id="modeToggleBtn" onclick="toggleInteractionMode()" 
+            <button id="modeToggleBtn" onclick="toggleInteractionMode()"
                 class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all bg-[#8c2d27] text-white shadow hover:bg-[#a3362f] active:scale-95">
                 <span id="modeIcon">✍️</span>
                 <span id="modeText">書寫模式</span>
             </button>
 
-            <!-- Ink Color Selector -->
             <div class="flex items-center bg-[#2f2823] p-1 rounded-lg border border-[#453b33]" title="選擇墨色">
                 <button onclick="setInkColor('#1a1a1a', this)" class="ink-btn w-6 h-6 rounded-full bg-[#1a1a1a] border-2 border-[#d4af37] mx-0.5 transition-transform scale-110" aria-label="濃墨"></button>
                 <button onclick="setInkColor('#b82925', this)" class="ink-btn w-6 h-6 rounded-full bg-[#b82925] border border-transparent mx-0.5 transition-transform" aria-label="硃砂紅"></button>
                 <button onclick="setInkColor('#d4af37', this)" class="ink-btn w-6 h-6 rounded-full bg-[#d4af37] border border-transparent mx-0.5 transition-transform" aria-label="泥金"></button>
             </div>
 
-            <!-- Brush Size Selector -->
             <div class="hidden md:flex items-center bg-[#2f2823] px-2 py-1 rounded-lg border border-[#453b33] gap-1.5" title="筆鋒粗細">
                 <button onclick="setBrushSize(2.5, this)" class="size-btn px-2 py-0.5 text-xs rounded bg-[#4a3f37] text-[#f3ead8]">細楷</button>
                 <button onclick="setBrushSize(4.2, this)" class="size-btn px-2 py-0.5 text-xs rounded text-[#a89b8c] hover:text-white">中楷</button>
                 <button onclick="setBrushSize(6.5, this)" class="size-btn px-2 py-0.5 text-xs rounded text-[#a89b8c] hover:text-white">行楷</button>
             </div>
 
-            <!-- Paper Style Selector -->
             <select id="paperSelect" onchange="changePaperStyle(this.value)" aria-label="紙張樣式"
                 class="bg-[#2f2823] text-[#e8dfd1] text-xs rounded-lg px-2 py-1.5 border border-[#453b33] focus:outline-none">
                 <option value="classic">古法宣紙</option>
@@ -219,7 +192,6 @@
                 <option value="dark">磁青泥金</option>
             </select>
 
-            <!-- Guide Opacity Toggle -->
             <button onclick="toggleGuideVisibility()" id="guideBtn"
                 class="px-2.5 py-1.5 rounded-lg text-xs bg-[#2f2823] border border-[#453b33] hover:bg-[#3d342d] text-[#d6c9b8]" title="切換臨摹字帖深淺">
                 字帖：中
@@ -228,14 +200,8 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-1.5">
-            <button onclick="undoLastStroke()" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs bg-[#2f2823] border border-[#453b33] hover:bg-[#3d342d] text-[#e8dfd1] active:scale-95" title="復原上一筆">
+            <button onclick="undoLastStroke()" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs bg-[#2f2823] border border-[#453b33] hover:bg-[#3d342d] text-[#e8dfd1] active:scale-95" title="復原筆劃">
                 ↩️ <span class="hidden sm:inline">復原</span>
-            </button>
-            <button onclick="openModal('guideModal')" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs bg-[#2f2823] border border-[#453b33] hover:bg-[#3d342d] text-[#e8dfd1]">
-                📖 <span class="hidden sm:inline">抄經須知</span>
-            </button>
-            <button onclick="openModal('dedicationModal')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#4d6b53] hover:bg-[#5c7f63] text-white shadow active:scale-95">
-                🙏 迴向圓滿
             </button>
         </div>
     </header>
@@ -243,7 +209,7 @@
     <!-- Helper Banner for Mobile Touch Navigation -->
     <div class="bg-[#332b24] text-[#cbbba8] text-xs px-4 py-1.5 flex items-center justify-between border-b border-[#453b33]">
         <div class="flex items-center gap-2">
-            <span id="statusTip">💡 提示：直接用手指或觸控筆在格子內描紅書寫；若需左右移動經卷，請點擊上方「書寫模式」切換為「移動經卷」，或使用下方捲軸。</span>
+            <span id="statusTip">💡 提示：直接用手指或觸控筆在格子內描紅書寫；若需左右移動經卷，請點擊上方「書寫模式」切換為「移動經卷」。</span>
         </div>
         <div class="flex items-center gap-2 shrink-0">
             <button onclick="scrollSutra(240)" class="px-2 py-0.5 bg-[#453b33] rounded hover:bg-[#574b41] text-[#f3ead8]" title="向右移動（開頭）">◀ 卷首</button>
@@ -253,14 +219,10 @@
 
     <!-- Main Sutra Paper Workspace -->
     <main class="flex-1 relative overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-6">
-        <!-- Scrollable Paper Container -->
         <div id="paperContainer" class="xuan-paper w-full h-full max-w-6xl rounded-xl border-2 border-[#bfa988] relative flex flex-col overflow-hidden">
-            
-            <!-- Scrollable Sutra Area (Right-to-Left) -->
             <div id="scrollWrapper" class="sutra-scroll-container flex-1 w-full h-full relative">
-                <!-- Inner wrapper that holds the exact width of all columns + canvas -->
                 <div id="sutraBoard" class="relative inline-flex flex-row h-full items-center px-6 py-4" style="direction: rtl;">
-                    
+
                     <!-- Rightmost Header Column (Title & Metadata) -->
                     <div class="flex flex-col justify-between h-full py-2 pl-4 ml-3 border-l border-[#a8322c]/30 select-none shrink-0" style="direction: ltr;">
                         <div class="text-center">
@@ -269,7 +231,7 @@
                             </span>
                         </div>
                         <div class="my-auto text-center py-2">
-                            <p class="text-xs tracking-[0.3em] opacity-70" style="writing-mode: vertical-rl;">抄經慢活修心</p>
+                            <p class="text-xs tracking-[0.3em] opacity-70" style="writing-mode: vertical-rl;">抄經修心</p>
                         </div>
                         <div class="flex flex-col gap-2 text-xs opacity-80">
                             <div>
@@ -278,15 +240,14 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] opacity-75">抄寫者：</label>
-                                <input type="text" id="copierName" class="w-20 bg-transparent border-b border-current text-xs focus:outline-none text-center" placeholder="沐手敬書">
+                                <input type="text" id="copierName" class="w-20 bg-transparent border-b border-current text-xs focus:outline-none text-center" placeholder="敬書">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Dynamic Character Grid Columns Injected Here -->
                     <div id="columnsContainer" class="flex flex-row gap-1.5 items-center"></div>
 
-                    <!-- Leftmost Footer Column (Completion Seal & Dedication) -->
+                    <!-- Leftmost Footer Column -->
                     <div class="flex flex-col justify-between h-full py-2 pr-4 mr-3 border-r border-[#a8322c]/30 select-none shrink-0" style="direction: ltr;">
                         <div class="text-center">
                             <p class="text-xs tracking-[0.25em] opacity-75" style="writing-mode: vertical-rl;">般若波羅蜜多心經終</p>
@@ -295,9 +256,6 @@
                             <div class="w-10 h-10 vermilion-seal rounded-sm flex items-center justify-center text-xs leading-tight text-center p-0.5 bg-white/40">
                                 功德<br>圓滿
                             </div>
-                            <button onclick="openModal('dedicationModal')" class="px-2 py-1.5 rounded bg-[#a8322c] text-white text-xs shadow hover:bg-[#8f2823] transition">
-                                迴向祈願
-                            </button>
                         </div>
                         <div class="text-center">
                             <button onclick="confirmClearBoard()" class="text-[11px] underline opacity-60 hover:opacity-100">
@@ -306,108 +264,24 @@
                         </div>
                     </div>
 
-                    <!-- Full-Board Transparent Touch/Stylus Canvas -->
                     <canvas id="writingCanvas"></canvas>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Status & Ambient Sound Bar -->
+    <!-- Bottom Status & Export Bar -->
     <footer class="bg-[#231e1a] text-[#a89b8c] text-xs px-4 py-2 border-t border-[#3d342d] flex items-center justify-between">
         <div class="flex items-center gap-4">
             <span>全經共 <strong class="text-[#e8dfd1]">268</strong> 字</span>
             <span id="strokeCountDisplay">已書寫筆劃：<strong class="text-[#e8dfd1]">0</strong> 筆</span>
         </div>
         <div class="flex items-center gap-3">
-            <button id="bellBtn" onclick="playZenBell()" class="flex items-center gap-1 px-2.5 py-1 rounded bg-[#2f2823] border border-[#453b33] hover:text-[#f3ead8] transition active:scale-95">
-                <span>🔔</span> <span>靜心引磬</span>
-            </button>
             <button onclick="exportCalligraphy()" class="flex items-center gap-1 px-2.5 py-1 rounded bg-[#2f2823] border border-[#453b33] hover:text-[#f3ead8] transition active:scale-95">
                 <span>🖼️</span> <span>保存墨寶</span>
             </button>
         </div>
     </footer>
-
-    <!-- Modal 1: 抄經須知 (Preparation & Etiquette from PDF) -->
-    <div id="guideModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-[#f6f1e3] text-[#2c241e] max-w-lg w-full rounded-2xl border-2 border-[#bfa988] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-[#2c241e] text-[#f3ead8] px-5 py-3.5 flex items-center justify-between">
-                <h2 class="text-lg font-bold tracking-widest">抄經須知 · 慢活修心</h2>
-                <button onclick="closeModal('guideModal')" class="text-xl leading-none hover:text-white">&times;</button>
-            </div>
-            <div class="p-5 overflow-y-auto space-y-4 text-sm leading-relaxed">
-                <div class="bg-white/60 p-3.5 rounded-xl border border-[#dcd0bc]">
-                    <h3 class="font-bold text-[#8c2d27] mb-1.5 flex items-center gap-1.5">🌿 抄經前準備</h3>
-                    <ul class="list-disc list-inside space-y-1 text-[#4a3f37]">
-                        <li><strong>淨手：</strong>抄經前先洗手，表示對經文的恭敬。</li>
-                        <li><strong>靜心：</strong>花幾分鐘調整呼吸，讓心平靜下來（可點擊右下角「靜心引磬」）。</li>
-                        <li><strong>環境：</strong>選擇安靜、整潔、光線充足的地方。</li>
-                        <li><strong>工具：</strong>準備好觸控筆或潔淨雙指，如臨筆墨。</li>
-                    </ul>
-                </div>
-                <div class="bg-white/60 p-3.5 rounded-xl border border-[#dcd0bc]">
-                    <h3 class="font-bold text-[#8c2d27] mb-1.5 flex items-center gap-1.5">🖌️ 抄經時注意</h3>
-                    <ul class="list-disc list-inside space-y-1 text-[#4a3f37]">
-                        <li><strong>專注當下：</strong>一筆一劃用心書寫，不急不躁。</li>
-                        <li><strong>字跡工整：</strong>不求快，但求每個字清晰端正。</li>
-                        <li><strong>保持恭敬：</strong>抄經時保持身心清淨。</li>
-                        <li><strong>中途休息：</strong>若需休息，可在段落處暫停。</li>
-                    </ul>
-                </div>
-                <div class="bg-white/60 p-3.5 rounded-xl border border-[#dcd0bc]">
-                    <h3 class="font-bold text-[#8c2d27] mb-1.5 flex items-center gap-1.5">📱 手寫操作說明</h3>
-                    <p class="text-[#4a3f37]">
-                        經文依傳統<strong>由右至左、由上而下</strong>排列。在「書寫模式」下可直接在方格中描紅；點擊上方按鈕切換至「移動經卷」即可左右滑動頁面。
-                    </p>
-                </div>
-            </div>
-            <div class="px-5 py-3 bg-[#ebe3d1] border-t border-[#dcd0bc] flex justify-end">
-                <button onclick="closeModal('guideModal')" class="px-5 py-2 rounded-lg bg-[#8c2d27] text-white font-semibold hover:bg-[#a3362f] transition">
-                    開始靜心抄經
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal 2: 迴向文與圓滿 (Dedication Verse from PDF) -->
-    <div id="dedicationModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-[#f6f1e3] text-[#2c241e] max-w-lg w-full rounded-2xl border-2 border-[#bfa988] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-[#4d6b53] text-white px-5 py-3.5 flex items-center justify-between">
-                <h2 class="text-lg font-bold tracking-widest">🙏 抄經圓滿 · 迴向祈願</h2>
-                <button onclick="closeModal('dedicationModal')" class="text-xl leading-none hover:text-gray-200">&times;</button>
-            </div>
-            <div class="p-5 overflow-y-auto space-y-4 text-sm leading-relaxed">
-                <div class="text-center py-4 px-3 bg-white/75 rounded-xl border border-[#c8b89d] shadow-inner">
-                    <p class="text-xs text-[#8c2d27] font-semibold tracking-widest mb-2">【 迴 向 文 範 例 】</p>
-                    <p class="text-lg sm:text-xl font-bold tracking-[0.2em] leading-loose text-[#231e1a]">
-                        願以此功德，莊嚴佛淨土，<br>
-                        上報四重恩，下濟三途苦。<br>
-                        若有見聞者，悉發菩提心，<br>
-                        盡此一報身，同生極樂國。
-                    </p>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="block font-bold text-[#4a3f37]">個人專屬迴向祈願（可選填）：</label>
-                    <textarea id="dedicationInput" rows="2" placeholder="例如：願以此抄經功德，迴向給家人身體健康、平安吉祥、智慧增長..."
-                        class="w-full p-2.5 rounded-lg bg-white/80 border border-[#bfa988] focus:outline-none focus:border-[#4d6b53] text-sm"></textarea>
-                </div>
-
-                <div class="text-xs text-[#63564b] bg-[#ebe3d1]/70 p-3 rounded-lg">
-                    <strong>迴向方法：</strong>迴向是將抄經功德分享給他人或眾生。可迴向給自己、家人、朋友、冤親債主及法界眾生，祈願健康、平安、智慧、離苦得樂。
-                </div>
-            </div>
-            <div class="px-5 py-3 bg-[#ebe3d1] border-t border-[#dcd0bc] flex items-center justify-between gap-2">
-                <button onclick="exportCalligraphy()" class="px-4 py-2 rounded-lg bg-[#2c241e] text-[#f3ead8] text-xs sm:text-sm font-semibold hover:bg-[#3f342c] transition">
-                    🖼️ 下載保存墨寶
-                </button>
-                <button onclick="completeDedication()" class="px-5 py-2 rounded-lg bg-[#4d6b53] text-white text-xs sm:text-sm font-semibold hover:bg-[#5c7f63] transition">
-                    合十圓滿
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- Custom Toast / Confirmation Box (Replaces browser alert/confirm) -->
     <div id="toastBox" class="fixed bottom-14 left-1/2 -translate-x-1/2 bg-[#231e1a] text-[#f3ead8] border border-[#bfa988] px-4 py-2.5 rounded-xl shadow-2xl text-xs sm:text-sm z-50 transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-3">
@@ -419,11 +293,7 @@
     </div>
 
     <script>
-        /**
-         * Complete Traditional Chinese Text of the Heart Sutra (般若波羅蜜多心經)
-         * Arranged cleanly for vertical column rendering (Right-to-Left, Top-to-Bottom).
-         */
-        const HEART_SUTRA_TEXT = 
+        const HEART_SUTRA_TEXT =
             "般若波羅蜜多心經" +
             "觀自在菩薩行深般若波羅蜜多時照見五蘊皆空度一切苦厄" +
             "舍利子色不異空空不異色色即是空空即是色受想行識亦復如是" +
@@ -436,19 +306,17 @@
             "故知般若波羅蜜多是大神咒是大明咒是無上咒是無等等咒能除一切苦真實不虛" +
             "故說般若波羅蜜多咒即說咒曰揭諦揭諦波羅揭諦波羅僧揭諦菩提薩婆訶";
 
-        // Application State
         const state = {
             isWritingMode: true,
             inkColor: '#1a1a1a',
             baseBrushSize: 2.5,
-            guideLevel: 1, // 0: Hidden, 1: Faint, 2: Medium, 3: Clear
-            strokes: [], // Array of stroke objects for Undo & Redraw
+            guideLevel: 1,
+            strokes: [],
             currentStroke: null,
             isDrawing: false,
             rowsPerColumn: 9
         };
 
-        // DOM Elements
         const scrollWrapper = document.getElementById('scrollWrapper');
         const sutraBoard = document.getElementById('sutraBoard');
         const columnsContainer = document.getElementById('columnsContainer');
@@ -457,11 +325,7 @@
         let pendingSegments = [];
         let renderFrameScheduled = false;
 
-        /**
-         * Initialize Date, Grid Layout, and Canvas Dimensions
-         */
         window.onload = function () {
-            // Set today's date automatically
             const today = new Date();
             const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
             document.getElementById('copyDate').value = dateStr;
@@ -469,41 +333,30 @@
             buildSutraGrid();
             resizeCanvas();
 
-            // Re-layout on window resize or orientation change
             let resizeTimer;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
                     const prevRows = state.rowsPerColumn;
                     calculateRowsPerColumn();
-                    if (prevRows !== state.rowsPerColumn) {
-                        buildSutraGrid();
-                    }
+                    if (prevRows !== state.rowsPerColumn) buildSutraGrid();
                     resizeCanvas();
                 }, 150);
             });
 
             setupCanvasEvents();
-            
-            // Scroll initially to the rightmost edge (beginning of the Sutra)
+
             setTimeout(() => {
                 scrollWrapper.scrollLeft = scrollWrapper.scrollWidth;
             }, 50);
         };
 
-        /**
-         * Calculate optimal characters per vertical column based on viewport height
-         */
         function calculateRowsPerColumn() {
-            const availableHeight = scrollWrapper.clientHeight - 44; // padding allowance
+            const availableHeight = scrollWrapper.clientHeight - 44;
             const cellHeight = window.innerWidth >= 768 ? 104 : 82;
-            const rows = Math.max(4, Math.min(12, Math.floor(availableHeight / cellHeight)));
-            state.rowsPerColumn = rows;
+            state.rowsPerColumn = Math.max(4, Math.min(12, Math.floor(availableHeight / cellHeight)));
         }
 
-        /**
-         * Build the vertical Right-to-Left grid of character boxes
-         */
         function buildSutraGrid() {
             calculateRowsPerColumn();
             columnsContainer.innerHTML = '';
@@ -534,9 +387,6 @@
             applyGuideOpacity();
         }
 
-        /**
-         * Match the transparent HTML5 Canvas exactly to the scrollable Sutra board size
-         */
         function resizeCanvas() {
             const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
             const boardWidth = Math.max(sutraBoard.offsetWidth, sutraBoard.scrollWidth);
@@ -552,9 +402,6 @@
             redrawAllStrokes();
         }
 
-        /**
-         * Pointer / Touch Event Handlers with Velocity-Sensitive Calligraphy Brush Simulation
-         */
         function setupCanvasEvents() {
             canvas.addEventListener('pointerdown', handlePointerDown, { passive: false });
             canvas.addEventListener('pointermove', handlePointerMove, { passive: false });
@@ -574,7 +421,6 @@
 
         function handlePointerDown(e) {
             if (!state.isWritingMode) return;
-            // Only respond to primary touch/stylus/left-click
             if (e.pointerType === 'mouse' && e.button !== 0) return;
 
             e.preventDefault();
@@ -584,17 +430,13 @@
             state.isDrawing = true;
 
             const pt = getCanvasPoint(e);
-            const initialWidth = pt.pressure 
-                ? state.baseBrushSize * (0.6 + pt.pressure * 1.1) 
-                : state.baseBrushSize * 1.15; // Slight ink pooling on brush touch-down
+            const initialWidth = pt.pressure
+                ? state.baseBrushSize * (0.6 + pt.pressure * 1.1)
+                : state.baseBrushSize * 1.15;
 
             pt.width = initialWidth;
-            state.currentStroke = {
-                color: state.inkColor,
-                points: [pt]
-            };
+            state.currentStroke = { color: state.inkColor, points: [pt] };
 
-            // Draw initial ink dot immediately
             ctx.fillStyle = state.inkColor;
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, initialWidth / 2, 0, Math.PI * 2);
@@ -612,7 +454,6 @@
             for (let i = 0; i < eventList.length; i++) {
                 const pt = getCanvasPoint(eventList[i]);
                 const prevPt = points[points.length - 1];
-
                 const dx = pt.x - prevPt.x;
                 const dy = pt.y - prevPt.y;
                 const dist = Math.hypot(dx, dy);
@@ -620,8 +461,8 @@
 
                 const dt = Math.max(1, pt.time - prevPt.time);
                 const velocity = dist / dt;
-
                 let targetWidth;
+
                 if (pt.pressure !== null) {
                     targetWidth = state.baseBrushSize * (0.45 + pt.pressure * 1.35);
                 } else {
@@ -647,8 +488,7 @@
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            for (let i = 0; i < pendingSegments.length; i++) {
-                const seg = pendingSegments[i];
+            for (const seg of pendingSegments) {
                 ctx.strokeStyle = seg.color;
                 ctx.lineWidth = (seg.p1.width + seg.p2.width) / 2;
                 ctx.beginPath();
@@ -659,7 +499,7 @@
             pendingSegments.length = 0;
         }
 
-        function handlePointerUp(e) {
+        function handlePointerUp() {
             if (!state.isDrawing) return;
             state.isDrawing = false;
             flushPendingSegments();
@@ -671,24 +511,17 @@
             state.currentStroke = null;
         }
 
-        /**
-         * Render a smooth tapered brush segment between two points
-         */
         function drawSegment(p1, p2, color) {
             ctx.strokeStyle = color;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.lineWidth = (p1.width + p2.width) / 2;
-
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
         }
 
-        /**
-         * Redraw all saved strokes (used after Undo or Resize)
-         */
         function redrawAllStrokes() {
             const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
             ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
@@ -709,9 +542,6 @@
             updateStrokeCounter();
         }
 
-        /**
-         * Undo the last brush stroke
-         */
         function undoLastStroke() {
             if (state.strokes.length === 0) {
                 showToast('目前尚無筆劃可復原');
@@ -722,13 +552,10 @@
         }
 
         function updateStrokeCounter() {
-            document.getElementById('strokeCountDisplay').innerHTML = 
+            document.getElementById('strokeCountDisplay').innerHTML =
                 `已書寫筆劃：<strong class="text-[#e8dfd1]">${state.strokes.length}</strong> 筆`;
         }
 
-        /**
-         * Toggle between Touch Writing Mode and Touch Scroll/Pan Mode
-         */
         function toggleInteractionMode() {
             state.isWritingMode = !state.isWritingMode;
             const btn = document.getElementById('modeToggleBtn');
@@ -749,23 +576,14 @@
                 btn.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all bg-[#2b6cb0] text-white shadow hover:bg-[#3182ce] active:scale-95';
                 icon.textContent = '✋';
                 text.textContent = '移動經卷';
-                tip.textContent = '💡 提示：目前為「移動經卷」，請左右滑動畫面瀏覽整部心經，完成後再切回書寫模式。';
+                tip.textContent = '💡 提示：目前為「移動經卷」，請左右滑動畫面瀏覽整部心經。';
             }
         }
 
-        /**
-         * Smooth horizontal scroll helper buttons
-         */
         function scrollSutra(deltaX) {
-            scrollWrapper.scrollBy({
-                left: deltaX,
-                behavior: 'smooth'
-            });
+            scrollWrapper.scrollBy({ left: deltaX, behavior: 'smooth' });
         }
 
-        /**
-         * Ink Color & Brush Size Controls
-         */
         function setInkColor(color, btnEl) {
             state.inkColor = color;
             document.querySelectorAll('.ink-btn').forEach(b => {
@@ -774,8 +592,6 @@
             });
             btnEl.style.borderColor = '#d4af37';
             btnEl.classList.add('scale-110');
-
-            // Ensure user is in writing mode when picking ink
             if (!state.isWritingMode) toggleInteractionMode();
         }
 
@@ -787,34 +603,25 @@
             btnEl.className = 'size-btn px-2 py-0.5 text-xs rounded bg-[#4a3f37] text-[#f3ead8]';
         }
 
-        /**
-         * Paper Style Switcher (Classic Xuan, Gold-flecked, Dark Indigo)
-         */
         function changePaperStyle(style) {
             const container = document.getElementById('paperContainer');
             container.classList.remove('xuan-paper', 'xuan-gold', 'xuan-dark');
-            
+
             if (style === 'gold') {
                 container.classList.add('xuan-paper', 'xuan-gold');
                 if (state.inkColor === '#d4af37') setInkColor('#1a1a1a', document.querySelectorAll('.ink-btn')[0]);
             } else if (style === 'dark') {
                 container.classList.add('xuan-paper', 'xuan-dark');
-                // Automatically suggest gold ink on dark indigo paper if using black ink
                 if (state.inkColor === '#1a1a1a') {
                     setInkColor('#d4af37', document.querySelectorAll('.ink-btn')[2]);
-                    showToast('已自動為您切換為「泥金墨色」，搭配磁青紙更顯莊嚴');
+                    showToast('已自動切換為泥金墨色');
                 }
             } else {
                 container.classList.add('xuan-paper');
-                if (state.inkColor === '#d4af37') {
-                    setInkColor('#1a1a1a', document.querySelectorAll('.ink-btn')[0]);
-                }
+                if (state.inkColor === '#d4af37') setInkColor('#1a1a1a', document.querySelectorAll('.ink-btn')[0]);
             }
         }
 
-        /**
-         * Cycle Guide Character Watermark Opacity
-         */
         function toggleGuideVisibility() {
             state.guideLevel = (state.guideLevel + 1) % 4;
             applyGuideOpacity();
@@ -823,27 +630,17 @@
         function applyGuideOpacity() {
             const btn = document.getElementById('guideBtn');
             const chars = document.querySelectorAll('.guide-char');
-            const levels = [
-                { label: '字帖：無', opacity: '0' },
-                { label: '字帖：淡', opacity: '0.65' },
-                { label: '字帖：中', opacity: '1' },
-                { label: '字帖：濃', opacity: '1.6' }
-            ];
-            const current = levels[state.guideLevel];
-            btn.textContent = current.label;
+            const labels = ['字帖：無', '字帖：淡', '字帖：中', '字帖：濃'];
+            btn.textContent = labels[state.guideLevel];
+
             chars.forEach(c => {
-                c.style.opacity = state.guideLevel === 0 ? '0' : (state.guideLevel === 1 ? '0.55' : (state.guideLevel === 2 ? '1' : '1'));
-                if (state.guideLevel === 3) {
-                    c.style.fontWeight = '700';
-                } else {
-                    c.style.fontWeight = '400';
-                }
+                c.style.opacity = state.guideLevel === 0 ? '0'
+                    : state.guideLevel === 1 ? '0.55'
+                    : '1';
+                c.style.fontWeight = state.guideLevel === 3 ? '700' : '400';
             });
         }
 
-        /**
-         * Clear the entire writing canvas with custom confirmation UI
-         */
         function confirmClearBoard() {
             if (state.strokes.length === 0) {
                 showToast('紙面已是潔淨狀態');
@@ -852,50 +649,10 @@
             showConfirm('確定要清除所有已書寫的筆劃，重新開始嗎？', () => {
                 state.strokes = [];
                 redrawAllStrokes();
-                showToast('已重新淨紙，請靜心書寫');
+                showToast('已重新淨紙');
             });
         }
 
-        /**
-         * Synthesized Meditation Bell (引磬聲) using Web Audio API (100% Offline)
-         */
-        function playZenBell() {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                const audioCtx = new AudioCtx();
-                const now = audioCtx.currentTime;
-
-                // Fundamental & harmonic overtones of a traditional singing bowl / bell
-                const frequencies = [528, 1056, 1584, 2420];
-                const gains = [0.35, 0.15, 0.08, 0.04];
-
-                frequencies.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, now);
-
-                    gainNode.gain.setValueAtTime(0.001, now);
-                    gainNode.gain.exponentialRampToValueAtTime(gains[idx], now + 0.03);
-                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 4.5 - idx * 0.6);
-
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-
-                    osc.start(now);
-                    osc.stop(now + 4.6);
-                });
-
-                showToast('🔔 磬聲清越，願心隨聲靜');
-            } catch (err) {
-                showToast('您的裝置不支援音效播放');
-            }
-        }
-
-        /**
-         * Export the Sutra Grid + Handwritten Strokes as a high-res PNG image
-         */
         function exportCalligraphy() {
             showToast('正在合成您的心經墨寶圖檔...');
             setTimeout(() => {
@@ -906,17 +663,13 @@
                     exportCanvas.height = canvas.height;
                     const eCtx = exportCanvas.getContext('2d');
 
-                    // 1. Fill paper background color
                     const paperStyle = document.getElementById('paperSelect').value;
                     eCtx.fillStyle = paperStyle === 'dark' ? '#1e242b' : (paperStyle === 'gold' ? '#f7eed6' : '#f6f1e3');
                     eCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
                     eCtx.scale(dpr, dpr);
 
-                    // 2. Draw grid boxes and guide characters onto export canvas
                     const boardRect = sutraBoard.getBoundingClientRect();
-                    const cells = document.querySelectorAll('.char-cell');
-                    cells.forEach(cell => {
+                    document.querySelectorAll('.char-cell').forEach(cell => {
                         const r = cell.getBoundingClientRect();
                         const x = r.left - boardRect.left;
                         const y = r.top - boardRect.top;
@@ -935,11 +688,9 @@
                         }
                     });
 
-                    // 3. Layer the user's handwritten calligraphy strokes on top
                     eCtx.setTransform(1, 0, 0, 1, 0, 0);
                     eCtx.drawImage(canvas, 0, 0);
 
-                    // 4. Trigger file download
                     const link = document.createElement('a');
                     const copier = document.getElementById('copierName').value.trim() || '心經墨寶';
                     link.download = `般若波羅蜜多心經_${copier}.png`;
@@ -953,28 +704,8 @@
             }, 100);
         }
 
-        /**
-         * Modal & Custom Notification Helpers
-         */
-        function openModal(id) {
-            const el = document.getElementById(id);
-            el.classList.remove('hidden');
-            el.classList.add('flex');
-        }
-
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            el.classList.add('hidden');
-            el.classList.remove('flex');
-        }
-
-        function completeDedication() {
-            closeModal('dedicationModal');
-            playZenBell();
-            showToast('🙏 抄經功德圓滿，願一切眾生離苦得樂、吉祥平安');
-        }
-
         let toastTimeout;
+
         function showToast(msg) {
             const box = document.getElementById('toastBox');
             const msgEl = document.getElementById('toastMessage');
@@ -1001,7 +732,7 @@
 
             confirmBtn.onclick = () => {
                 hideToast();
-                onConfirm();
+                if (typeof onConfirm === 'function') onConfirm();
             };
         }
 
