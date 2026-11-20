@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stroop Color Focus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121826;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 26px;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 16px;
+      background: #1e293b;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+
+    select, button {
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid #475569;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .start-btn {
+      background: #2563eb;
+      border-color: #2563eb;
+      padding: 12px 24px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .start-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .hint {
+      font-size: 15px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .word-box {
+      background: #1e293b;
+      border: 3px solid #334155;
+      border-radius: 14px;
+      width: 320px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+
+    .word-box.flash-right {
+      border-color: #10b981;
+    }
+
+    .word-box.flash-wrong {
+      border-color: #ef4444;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, 155px);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .color-btn {
+      height: 60px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .color-btn:active {
+      opacity: 0.85;
+    }
+
+    #message {
+      margin-top: 12px;
+      font-size: 18px;
+      color: #34d399;
+      min-height: 24px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Stroop Color Focus</h1>
+
+  <div class="top-bar">
+    <label>
+      Colors:
+      <select id="modeSelect" onchange="resetScreen()">
+        <option value="4" selected>4 Colors</option>
+        <option value="6">6 Colors</option>
+      </select>
+    </label>
+    <span>Time: <strong id="timer">30</strong>s</span>
+    <span>Score: <strong id="score">0</strong></span>
+    <span>Best: <strong id="best">0</strong></span>
+  </div>
+
+  <div class="hint">Tap the <strong>INK COLOR</strong> of the word — ignore what the word says!</div>
+
+  <div class="word-box" id="wordBox" style="color:#38bdf8;">READY</div>
+
+  <div class="choices" id="choicesBox" style="display:none;"></div>
+
+  <button type="button" class="start-btn" id="startBtn" onclick="startGame()">Start 30s Test</button>
+
+  <div id="message"></div>
+
+  <script>
+    var ALL_COLORS = [
+      { name: "RED", hex: "#ef4444", btnBg: "#dc2626" },
+      { name: "BLUE", hex: "#3b82f6", btnBg: "#2563eb" },
+      { name: "GREEN", hex: "#22c55e", btnBg: "#16a34a" },
+      { name: "YELLOW", hex: "#eab308", btnBg: "#ca8a04" },
+      { name: "PURPLE", hex: "#a855f7", btnBg: "#9333ea" },
+      { name: "ORANGE", hex: "#f97316", btnBg: "#ea580c" }
+    ];
+
+    var activeColors = [];
+    var targetInk = "";
+    var score = 0;
+    var totalClicks = 0;
+    var best4 = 0;
+    var best6 = 0;
+    var timeLeft = 30;
+    var timerInterval = null;
+
+    function stopClock() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resetScreen() {
+      stopClock();
+      var count = parseInt(document.getElementById("modeSelect").value, 10);
+      document.getElementById("best").textContent = (count === 4) ? best4 : best6;
+      document.getElementById("timer").textContent = "30";
+      document.getElementById("score").textContent = "0";
+      document.getElementById("message").textContent = "";
+      document.getElementById("choicesBox").style.display = "none";
+      document.getElementById("startBtn").style.display = "inline-block";
+
+      var box = document.getElementById("wordBox");
+      box.className = "word-box";
+      box.style.color = "#38bdf8";
+      box.textContent = "READY";
+    }
+
+    function nextCard() {
+      var wordList = activeColors.slice().sort(function () { return 0.5 - Math.random(); });
+      var inkList = activeColors.slice().sort(function () { return 0.5 - Math.random(); });
+
+      var wordItem = wordList.pop();
+      var inkItem = inkList.pop();
+
+      targetInk = inkItem.name;
+
+      var box = document.getElementById("wordBox");
+      box.textContent = wordItem.name;
+      box.style.color = inkItem.hex;
+    }
+
+    function startGame() {
+      stopClock();
+
+      var count = parseInt(document.getElementById("modeSelect").value, 10);
+      activeColors = ALL_COLORS.slice(0, count);
+      score = 0;
+      totalClicks = 0;
+      timeLeft = 30;
+
+      document.getElementById("score").textContent = "0";
+      document.getElementById("timer").textContent = "30";
+      document.getElementById("message").textContent = "";
+      document.getElementById("startBtn").style.display = "none";
+
+      var choicesBox = document.getElementById("choicesBox");
+      choicesBox.innerHTML = "";
+      choicesBox.style.display = "grid";
+
+      for (var i = 0; i < activeColors.length; i++) {
+        var c = activeColors.slice(i, i + 1).pop();
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "color-btn";
+        btn.style.background = c.btnBg;
+        btn.textContent = c.name;
+        btn.setAttribute("data-color", c.name);
+        btn.onclick = pickColor;
+        choicesBox.appendChild(btn);
+      }
+
+      nextCard();
+
+      timerInterval = setInterval(function () {
+        timeLeft--;
+        document.getElementById("timer").textContent = timeLeft;
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function pickColor() {
+      if (!timerInterval) return;
+      var chosen = this.getAttribute("data-color");
+      var box = document.getElementById("wordBox");
+      totalClicks++;
+
+      if (chosen === targetInk) {
+        score++;
+        box.className = "word-box flash-right";
+      } else {
+        if (score > 0) score--;
+        box.className = "word-box flash-wrong";
+      }
+
+      document.getElementById("score").textContent = score;
+
+      setTimeout(function () {
+        box.className = "word-box";
+      }, 150);
+
+      nextCard();
+    }
+
+    function endGame() {
+      stopClock();
+      var count = parseInt(document.getElementById("modeSelect").value, 10);
+
+      if (count === 4 && score > best4) {
+        best4 = score;
+        document.getElementById("best").textContent = best4;
+      }
+      if (count === 6 && score > best6) {
+        best6 = score;
+        document.getElementById("best").textContent = best6;
+      }
+
+      document.getElementById("choicesBox").style.display = "none";
+      document.getElementById("startBtn").style.display = "inline-block";
+
+      var box = document.getElementById("wordBox");
+      box.style.color = "#34d399";
+      box.textContent = "DONE!";
+
+      var accuracy = (totalClicks === 0) ? 0 : Math.round((score / totalClicks) * 100);
+      if (accuracy < 0) accuracy = 0;
+
+      document.getElementById("message").textContent =
+        "Final Score: " + score + " (" + accuracy + "% accuracy)";
+    }
+  </script>
+</body>
+</html>

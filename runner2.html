@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>5-Lane 3D Runner</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: #050510; color: #fff;
+    font-family: sans-serif; user-select: none; -webkit-user-select: none;
+  }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  #ui {
+    position: absolute; top: 12px; left: 12px; right: 12px;
+    display: flex; justify-content: space-between; pointer-events: none; z-index: 5;
+  }
+  .box {
+    background: rgba(0, 0, 0, 0.75); border: 2px solid #0ff;
+    padding: 8px 14px; border-radius: 6px; font-size: 15px; font-weight: bold;
+  }
+  #banner {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    background: rgba(255, 0, 85, 0.9); border: 2px solid #fff;
+    padding: 12px 24px; border-radius: 8px; text-align: center;
+    font-weight: bold; font-size: 18px; display: none; z-index: 20;
+  }
+  #touch-controls {
+    position: absolute; bottom: 20px; left: 15px; right: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 15; pointer-events: none;
+  }
+  .move-group { display: flex; gap: 14px; pointer-events: auto; }
+  .t-btn {
+    width: 76px; height: 76px; border-radius: 50%;
+    background: rgba(0, 255, 255, 0.2); border: 2px solid #0ff;
+    color: #0ff; font-size: 28px; font-weight: bold;
+    display: flex; justify-content: center; align-items: center;
+    pointer-events: auto; touch-action: manipulation;
+  }
+  .t-btn:active { background: #0ff; color: #000; }
+  #fire-btn {
+    width: 86px; height: 86px;
+    background: rgba(255, 0, 85, 0.25); border: 2px solid #ff0055;
+    color: #ff88aa; font-size: 16px;
+  }
+  #fire-btn:active { background: #ff0055; color: #fff; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div id="ui">
+  <div class="box">SCORE: <span id="sc">0</span></div>
+  <div class="box">AMMO: <span id="am">3/3</span> <small id="rl"></small></div>
+</div>
+
+<div id="banner">CRASHED! TAP SCREEN TO RESTART</div>
+
+<div id="touch-controls">
+  <div class="move-group">
+    <div class="t-btn" id="left-btn">◀</div>
+    <div class="t-btn" id="right-btn">▶</div>
+  </div>
+  <div class="t-btn" id="fire-btn">FIRE</div>
+</div>
+
+<script>
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W = canvas.width = window.innerWidth;
+var H = canvas.height = window.innerHeight;
+
+window.onresize = function() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+};
+
+var LANES = new Array(-6, -3, 0, 3, 6);
+var lane = 2;
+var px = 0;
+var score = 0;
+var speed = 40;
+var playing = true;
+
+var ammo = 3;
+var maxAmmo = 3;
+var reload = 0;
+var reloadTime = 2.5;
+
+var obs = new Array();
+var bullets = new Array();
+var spawnT = 1.0;
+var gridZ = 0;
+
+function proj(x, y, z) {
+  var dz = z + 10;
+  if (dz <= 0.1) return null;
+  var s = 550 / dz;
+  var aspectScale = W < 600 ? 0.62 : 1.0;
+  return { x: W / 2 + x * s * aspectScale, y: H / 2 - (y - 6.5) * s, s: s };
+}
+
+function box3d(x, y, z, w, h, d, col1, col2) {
+  var hw = w/2, hh = h/2, hd = d/2;
+  var p1 = proj(x-hw, y-hh, z-hd), p2 = proj(x+hw, y-hh, z-hd);
+  var p3 = proj(x+hw, y+hh, z-hd), p4 = proj(x-hw, y+hh, z-hd);
+  var p5 = proj(x-hw, y+hh, z+hd), p6 = proj(x+hw, y+hh, z+hd);
+  if (!p1 || !p5) return;
+
+  ctx.fillStyle = col2;
+  ctx.beginPath();
+  ctx.moveTo(p4.x, p4.y); ctx.lineTo(p3.x, p3.y);
+  ctx.lineTo(p6.x, p6.y); ctx.lineTo(p5.x, p5.y);
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = col1;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+  ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+}
+
+function moveLeft() {
+  if (!playing) { restartGame(); return; }
+  if (lane > 0) lane--;
+}
+
+function moveRight() {
+  if (!playing) { restartGame(); return; }
+  if (lane < 4) lane++;
+}
+
+function fireBullet() {
+  if (!playing) { restartGame(); return; }
+  if (ammo > 0) {
+    ammo--;
+    bullets.push({ x: px, z: 2 });
+  }
+}
+
+function restartGame() {
+  obs = new Array();
+  bullets = new Array();
+  lane = 2;
+  px = 0;
+  score = 0;
+  speed = 40;
+  ammo = 3;
+  reload = 0;
+  spawnT = 0.8;
+  playing = true;
+  document.getElementById('banner').style.display = 'none';
+}
+
+window.onkeydown = function(e) {
+  var k = e.keyCode;
+  if (!playing) { restartGame(); return; }
+  if (k === 37 || k === 65) moveLeft();
+  if (k === 39 || k === 68) moveRight();
+  if (k === 32 || k === 38 || k === 87) { e.preventDefault(); fireBullet(); }
+};
+
+document.getElementById('left-btn').addEventListener('touchstart', function(e) {
+  e.preventDefault(); moveLeft();
+}, { passive: false });
+
+document.getElementById('right-btn').addEventListener('touchstart', function(e) {
+  e.preventDefault(); moveRight();
+}, { passive: false });
+
+document.getElementById('fire-btn').addEventListener('touchstart', function(e) {
+  e.preventDefault(); fireBullet();
+}, { passive: false });
+
+var touchStartX = 0;
+var touchStartY = 0;
+
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  if (!playing) { restartGame(); return; }
+  if (e.touches.length > 0) {
+    touchStartX = e.touches.item(0).clientX;
+    touchStartY = e.touches.item(0).clientY;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (!playing) return;
+  if (e.changedTouches.length > 0) {
+    var dx = e.changedTouches.item(0).clientX - touchStartX;
+    var dy = e.changedTouches.item(0).clientY - touchStartY;
+    if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) moveLeft();
+      else moveRight();
+    } else if (Math.abs(dx) < 15 && Math.abs(dy) < 15) {
+      fireBullet();
+    }
+  }
+}, { passive: false });
+
+var last = Date.now();
+function tick() {
+  requestAnimationFrame(tick);
+  var now = Date.now();
+  var dt = (now - last) / 1000;
+  if (dt > 0.1) dt = 0.1;
+  last = now;
+
+  if (playing) {
+    score += dt * 15;
+    speed += dt * 0.6;
+    document.getElementById('sc').innerText = Math.floor(score);
+
+    if (ammo < maxAmmo) {
+      reload += dt;
+      if (reload >= reloadTime) { ammo++; reload = 0; }
+      document.getElementById('rl').innerText = '(+' + (reloadTime - reload).toFixed(1) + 's)';
+    } else {
+      document.getElementById('rl').innerText = '(FULL)';
+    }
+    document.getElementById('am').innerText = ammo + '/' + maxAmmo;
+
+    var targetX = LANES.slice(lane, lane + 1).pop();
+    px += (targetX - px) * 15 * dt;
+    gridZ -= speed * dt;
+    if (gridZ < 0) gridZ += 10;
+
+    spawnT -= dt;
+    if (spawnT <= 0) {
+      var count = Math.floor(Math.random() * 3) + 2;
+      var arr = new Array(0, 1, 2, 3, 4);
+      arr.sort(function() { return 0.5 - Math.random(); });
+      for (var i = 0; i < count; i++) {
+        var laneIdx = arr.pop();
+        var obsX = LANES.slice(laneIdx, laneIdx + 1).pop();
+        obs.push({ x: obsX, z: 140, red: Math.random() > 0.3 });
+      }
+      spawnT = Math.max(0.65, 48 / speed);
+    }
+
+    for (var i = bullets.length - 1; i >= 0; i--) {
+      var b = bullets.slice(i, i + 1).pop();
+      b.z += 100 * dt;
+      var hit = false;
+      for (var j = obs.length - 1; j >= 0; j--) {
+        var o = obs.slice(j, j + 1).pop();
+        if (Math.abs(b.x - o.x) < 1.3 && Math.abs(b.z - o.z) < 2.2) {
+          hit = true;
+          if (o.red) { obs.splice(j, 1); score += 50; }
+          break;
+        }
+      }
+      if (hit || b.z > 150) bullets.splice(i, 1);
+    }
+
+    for (var i = obs.length - 1; i >= 0; i--) {
+      var o = obs.slice(i, i + 1).pop();
+      o.z -= speed * dt;
+      if (Math.abs(px - o.x) < 1.1 && Math.abs(o.z) < 1.6) {
+        playing = false;
+        var bnr = document.getElementById('banner');
+        bnr.innerText = 'CRASHED! SCORE: ' + Math.floor(score) + ' (TAP TO RESTART)';
+        bnr.style.display = 'block';
+      }
+      if (o.z < -12) obs.splice(i, 1);
+    }
+  }
+
+  ctx.fillStyle = '#050510';
+  ctx.fillRect(0, 0, W, H);
+
+  for (var i = 0; i <= 5; i++) {
+    var lx = -7.5 + i * 3;
+    var pA = proj(lx, 0, -5);
+    var pB = proj(lx, 0, 150);
+    if (pA && pB) {
+      ctx.strokeStyle = (i === 0 || i === 5) ? '#0ff' : '#055';
+      ctx.lineWidth = (i === 0 || i === 5) ? 3 : 1;
+      ctx.beginPath(); ctx.moveTo(pA.x, pA.y); ctx.lineTo(pB.x, pB.y); ctx.stroke();
+    }
+  }
+
+  ctx.strokeStyle = '#123';
+  ctx.lineWidth = 1;
+  for (var z = -5 + gridZ; z < 150; z += 10) {
+    var gA = proj(-7.5, 0, z), gB = proj(7.5, 0, z);
+    if (gA && gB) {
+      ctx.beginPath(); ctx.moveTo(gA.x, gA.y); ctx.lineTo(gB.x, gB.y); ctx.stroke();
+    }
+  }
+
+  obs.sort(function(a, b) { return b.z - a.z; });
+  for (var i = 0; i < obs.length; i++) {
+    var o = obs.slice(i, i + 1).pop();
+    box3d(o.x, 1.1, o.z, 2.2, 2.2, 2.2, o.red ? '#f05' : '#567', o.red ? '#f68' : '#89a');
+  }
+
+  for (var i = 0; i < bullets.length; i++) {
+    var b = bullets.slice(i, i + 1).pop();
+    box3d(b.x, 0.8, b.z, 0.4, 0.4, 2.5, '#ff0', '#fff');
+  }
+
+  box3d(px, 0.6, 0, 1.8, 0.8, 2.5, '#0cf', '#8ff');
+}
+tick();
+</script>
+</body>
+</html>

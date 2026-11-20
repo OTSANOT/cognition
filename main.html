@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cognitive Training Hub</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121826;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 16px;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 260px);
+      gap: 18px;
+      max-width: 560px;
+    }
+
+    .game-card {
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 14px;
+      padding: 22px 18px;
+      text-decoration: none;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .game-card:hover {
+      border-color: #38bdf8;
+      background: #263348;
+    }
+
+    .icon {
+      font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+      font-size: 42px;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #38bdf8;
+    }
+
+    .domain {
+      font-size: 13px;
+      font-weight: bold;
+      color: #34d399;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .note {
+      margin-top: 28px;
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 580px) {
+      .menu-grid {
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cognitive Training Hub</h1>
+  <div class="subtitle">Select a brain exercise below to begin</div>
+
+  <div class="menu-grid">
+    <a class="game-card" href="memory.html">
+      <div class="icon">&#127968;</div>
+      <div class="domain">Visual Recall</div>
+      <div class="title">Memory Flash Cards</div>
+      <div class="desc">Match pairs of everyday household items across 4x4, 5x5, or 6x6 grids.</div>
+    </a>
+
+    <a class="game-card" href="digit.html">
+      <div class="icon">&#128290;</div>
+      <div class="domain">Working Memory</div>
+      <div class="title">Digit Span</div>
+      <div class="desc">Memorize number sequences and enter them Forward or Backward on the touch numpad.</div>
+    </a>
+
+    <a class="game-card" href="trail.html">
+      <div class="icon">&#128256;</div>
+      <div class="domain">Cognitive Shifting</div>
+      <div class="title">Alternating Trail</div>
+      <div class="desc">Connect numbers and letters in alternating order (1 &rarr; A &rarr; 2 &rarr; B...) against the clock.</div>
+    </a>
+
+    <a class="game-card" href="stroop.html">
+      <div class="icon">&#127912;</div>
+      <div class="domain">Attention &amp; Focus</div>
+      <div class="title">Stroop Color Focus</div>
+      <div class="desc">Tap the true ink color of each word while ignoring distracting text in a 30-second sprint.</div>
+    </a>
+  </div>
+
+  <div class="note">
+    Tip: Keep <strong>index.html</strong>, <strong>memory.html</strong>, <strong>digit.html</strong>, <strong>trail.html</strong>, and <strong>stroop.html</strong> in the same folder. Use your browser's Back button to return here anytime.
+  </div>
+
+</body>
+</html>

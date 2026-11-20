@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Household Memory Flash Cards</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121826;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 26px;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 16px;
+      background: #1e293b;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+
+    select, button {
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid #475569;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .board {
+      display: grid;
+      gap: 10px;
+    }
+
+    .board.grid-4 {
+      grid-template-columns: repeat(4, 85px);
+      grid-template-rows: repeat(4, 85px);
+    }
+
+    .board.grid-5 {
+      grid-template-columns: repeat(5, 76px);
+      grid-template-rows: repeat(5, 76px);
+    }
+
+    .board.grid-6 {
+      grid-template-columns: repeat(6, 68px);
+      grid-template-rows: repeat(6, 68px);
+    }
+
+    .card {
+      font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .board.grid-6 .card {
+      font-size: 30px;
+    }
+
+    .card:hover {
+      border-color: #60a5fa;
+    }
+
+    .card.open {
+      background: #334155;
+      border-color: #38bdf8;
+    }
+
+    .card.matched {
+      background: #065f46;
+      border-color: #10b981;
+      cursor: default;
+    }
+
+    .card.bonus {
+      background: #78350f;
+      border-color: #f59e0b;
+      color: #fde68a;
+      cursor: default;
+    }
+
+    #message {
+      margin-top: 18px;
+      font-size: 18px;
+      color: #34d399;
+      min-height: 24px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Household Memory Flash Cards</h1>
+
+  <div class="top-bar">
+    <label>
+      Size:
+      <select id="sizeSelect" onchange="resetGame()">
+        <option value="4" selected>4x4 (8 Pairs)</option>
+        <option value="5">5x5 (12 Pairs + 1 Star)</option>
+        <option value="6">6x6 (18 Pairs)</option>
+      </select>
+    </label>
+    <span>Time: <strong id="timer">00:00</strong></span>
+    <span>Moves: <strong id="moves">0</strong></span>
+    <span>Matches: <strong id="matches">0</strong> / <strong id="totalPairs">8</strong></span>
+    <button type="button" onclick="resetGame()">Restart</button>
+  </div>
+
+  <div class="board grid-4" id="board"></div>
+  <div id="message"></div>
+
+  <script>
+    var ALL_SYMBOLS = [
+      "&#9749;",     // Hot Cup
+      "&#128273;",   // Key
+      "&#9986;",     // Scissors
+      "&#9200;",     // Alarm Clock
+      "&#128161;",   // Lightbulb
+      "&#9730;",     // Umbrella
+      "&#127968;",   // House
+      "&#128250;",   // Television
+      "&#128705;",   // Bathtub
+      "&#128247;",   // Camera
+      "&#128296;",   // Hammer
+      "&#128294;",   // Flashlight
+      "&#128214;",   // Open Book
+      "&#9742;",     // Telephone
+      "&#128274;",   // Lock
+      "&#127860;",   // Fork and Knife
+      "&#128083;",   // Eyeglasses
+      "&#8986;"      // Wristwatch
+    ];
+
+    var BONUS_STAR = "&#11088;";
+
+    var firstCard = null;
+    var secondCard = null;
+    var lock = false;
+    var moves = 0;
+    var matches = 0;
+    var totalPairs = 8;
+    var seconds = 0;
+    var timerInterval = null;
+    var timerStarted = false;
+
+    function formatTime(sec) {
+      var m = Math.floor(sec / 60);
+      var s = sec % 60;
+      return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+    }
+
+    function startTimer() {
+      if (timerStarted) return;
+      timerStarted = true;
+      timerInterval = setInterval(function () {
+        seconds++;
+        document.getElementById("timer").textContent = formatTime(seconds);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerStarted = false;
+    }
+
+    function resetGame() {
+      stopTimer();
+
+      var size = parseInt(document.getElementById("sizeSelect").value, 10);
+      var board = document.getElementById("board");
+      board.className = "board grid-" + size;
+      board.innerHTML = "";
+      document.getElementById("message").textContent = "";
+
+      firstCard = null;
+      secondCard = null;
+      lock = false;
+      moves = 0;
+      matches = 0;
+      seconds = 0;
+      totalPairs = Math.floor((size * size) / 2);
+
+      document.getElementById("timer").textContent = "00:00";
+      document.getElementById("moves").textContent = "0";
+      document.getElementById("matches").textContent = "0";
+      document.getElementById("totalPairs").textContent = totalPairs;
+
+      var shuffledPool = ALL_SYMBOLS.slice().sort(function () {
+        return 0.5 - Math.random();
+      });
+
+      var chosen = shuffledPool.slice(0, totalPairs);
+      var deck = chosen.concat(chosen);
+
+      if (size === 5) {
+        deck.push(BONUS_STAR);
+      }
+
+      deck.sort(function () {
+        return 0.5 - Math.random();
+      });
+
+      for (var i = 0; i < deck.length; i++) {
+        var val = deck.slice(i, i + 1).pop();
+        var card = document.createElement("div");
+        card.className = "card";
+        card.setAttribute("data-val", val);
+        card.textContent = "?";
+        card.onclick = flipCard;
+        board.appendChild(card);
+      }
+    }
+
+    function flipCard() {
+      if (lock) return;
+      if (this === firstCard) return;
+      if (this.classList.contains("matched") || this.classList.contains("bonus")) return;
+
+      startTimer();
+
+      var val = this.getAttribute("data-val");
+      this.innerHTML = val;
+
+      if (val === BONUS_STAR) {
+        this.classList.add("bonus");
+        return;
+      }
+
+      this.classList.add("open");
+
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      secondCard = this;
+      moves++;
+      document.getElementById("moves").textContent = moves;
+
+      if (firstCard.getAttribute("data-val") === secondCard.getAttribute("data-val")) {
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+        firstCard = null;
+        secondCard = null;
+        matches++;
+        document.getElementById("matches").textContent = matches;
+
+        if (matches === totalPairs) {
+          stopTimer();
+          document.getElementById("message").textContent =
+            "Completed all " + totalPairs + " pairs in " + formatTime(seconds) + " (" + moves + " moves)!";
+        }
+      } else {
+        lock = true;
+        setTimeout(function () {
+          firstCard.classList.remove("open");
+          secondCard.classList.remove("open");
+          firstCard.textContent = "?";
+          secondCard.textContent = "?";
+          firstCard = null;
+          secondCard = null;
+          lock = false;
+        }, 700);
+      }
+    }
+
+    resetGame();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Visual Neglect Rehabilitation & Training Suite</title>
+    <style>
+        /* ==========================================================================
+           CSS VARIABLES & THEME DEFINITIONS (100% OFFLINE SELF-CONTAINED)
+           ========================================================================== */
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #cbd5e1;
+            --accent-primary: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --anchor-color: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* High Contrast Accessibility Mode */
+        body.high-contrast {
+            --bg-primary: #000000;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --border-color: #4b5563;
+            --accent-primary: #facc15;
+            --accent-hover: #eab308;
+            --success-color: #4ade80;
+            --warning-color: #fb923c;
+            --danger-color: #f87171;
+            --anchor-color: #ff2a2a;
+        }
+
+        body.high-contrast .btn-primary {
+            color: #000000;
+            font-weight: 800;
+        }
+
+        /* ==========================================================================
+           RESET & BASE LAYOUT
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* ==========================================================================
+           HEADER & NAVIGATION BAR
+           ========================================================================== */
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            z-index: 20;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent-primary);
+            color: #fff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        body.high-contrast .brand-icon {
+            color: #000;
+        }
+
+        .brand h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .brand span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        .nav-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ==========================================================================
+           BUTTONS & FORM CONTROLS (LARGE TOUCH TARGETS FOR ACCESSIBILITY)
+           ========================================================================== */
+        button, select {
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.65rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+        }
+
+        button:hover, select:hover {
+            border-color: var(--accent-primary);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: #ffffff;
+            border-color: var(--accent-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-tab.active {
+            background-color: var(--accent-primary);
+            color: #ffffff;
+            border-color: var(--accent-primary);
+        }
+
+        body.high-contrast .btn-tab.active {
+            color: #000000;
+        }
+
+        .btn-sm {
+            padding: 0.45rem 0.75rem;
+            font-size: 0.85rem;
+            min-height: 38px;
+        }
+
+        /* ==========================================================================
+           SETTINGS TOOLBAR
+           ========================================================================== */
+        .toolbar {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.65rem 1.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .toggle-btn {
+            background-color: var(--bg-secondary);
+            padding: 0.45rem 0.85rem;
+            min-height: 40px;
+            font-size: 0.85rem;
+        }
+
+        .toggle-btn[aria-pressed="true"] {
+            background-color: var(--success-color);
+            color: #ffffff;
+            border-color: var(--success-color);
+        }
+
+        body.high-contrast .toggle-btn[aria-pressed="true"] {
+            color: #000000;
+        }
+
+        /* ==========================================================================
+           MAIN WORKSPACE & VISUAL ANCHOR CUE
+           ========================================================================== */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            gap: 1rem;
+        }
+
+        .exercise-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            background-color: var(--bg-secondary);
+            padding: 0.85rem 1.25rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .exercise-info h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .exercise-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .stat-pill {
+            background-color: var(--bg-tertiary);
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Training Arena Container */
+        .arena-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 420px;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* Visual Anchor Line (Crucial Clinical Aid for Left/Right Neglect) */
+        .anchor-strip {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 14px;
+            background-color: var(--anchor-color);
+            z-index: 10;
+            pointer-events: none;
+            display: none;
+            box-shadow: 0 0 15px var(--anchor-color);
+            animation: pulseAnchor 1.8s infinite ease-in-out;
+        }
+
+        .anchor-strip.left {
+            left: 0;
+            display: block;
+        }
+
+        .anchor-strip.right {
+            right: 0;
+            display: block;
+        }
+
+        @keyframes pulseAnchor {
+            0%, 100% { opacity: 0.65; width: 12px; }
+            50% { opacity: 1; width: 18px; }
+        }
+
+        /* ==========================================================================
+           EXERCISE 1: VISUAL SCANNING & TARGET SEARCH
+           ========================================================================== */
+        .scanning-field {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 440px;
+            flex: 1;
+        }
+
+        .scan-target {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: transform 0.15s ease, background-color 0.2s ease, opacity 0.2s ease;
+            border: 3px solid transparent;
+            box-shadow: var(--shadow-md);
+        }
+
+        .scan-target:active {
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+
+        .scan-target.found {
+            background-color: var(--success-color) !important;
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+            transform: translate(-50%, -50%) scale(1.08);
+            cursor: default;
+        }
+
+        .scan-target.hint-pulse {
+            animation: targetHint 0.8s infinite alternate;
+            border-color: var(--anchor-color);
+        }
+
+        @keyframes targetHint {
+            from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 5px var(--anchor-color); }
+            to { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 0 24px var(--anchor-color); }
+        }
+
+        /* ==========================================================================
+           EXERCISE 2: LINE BISECTION TEST & TRAINING
+           ========================================================================== */
+        .bisection-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            gap: 2rem;
+            position: relative;
+        }
+
+        .line-container {
+            position: relative;
+            width: 100%;
+            height: 90px;
+            display: flex;
+            align-items: center;
+        }
+
+        .bisection-line {
+            position: absolute;
+            height: 14px;
+            background-color: var(--text-primary);
+            border-radius: 7px;
+            cursor: crosshair;
+            touch-action: none;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Expand touch hit-area around the horizontal line */
+        .bisection-line::before {
+            content: "";
+            position: absolute;
+            top: -28px;
+            bottom: -28px;
+            left: 0;
+            right: 0;
+        }
+
+        .bisection-marker {
+            position: absolute;
+            top: -22px;
+            bottom: -22px;
+            width: 6px;
+            border-radius: 3px;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .marker-user {
+            background-color: var(--accent-primary);
+            z-index: 5;
+        }
+
+        .marker-true {
+            background-color: var(--success-color);
+            z-index: 4;
+            border: 1px dashed #fff;
+        }
+
+        .marker-label {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+        }
+
+        .bisection-feedback {
+            text-align: center;
+            max-width: 600px;
+            padding: 1rem 1.5rem;
+            background-color: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        /* ==========================================================================
+           EXERCISE 3: STAR CANCELLATION (CLINICAL SCREENING & PRACTICE)
+           ========================================================================== */
+        .cancellation-field {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 460px;
+            flex: 1;
+        }
+
+        .cancel-item {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 6px;
+            min-width: 44px;
+            min-height: 44px;
+            transition: transform 0.12s ease;
+        }
+
+        .cancel-item:active {
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+
+        .cancel-item.crossed::after {
+            content: "";
+            position: absolute;
+            width: 85%;
+            height: 4px;
+            background-color: var(--success-color);
+            transform: rotate(-45deg);
+            border-radius: 2px;
+        }
+
+        .cancel-item.crossed-error::after {
+            content: "";
+            position: absolute;
+            width: 85%;
+            height: 4px;
+            background-color: var(--danger-color);
+            transform: rotate(-45deg);
+            border-radius: 2px;
+        }
+
+        /* ==========================================================================
+           PROGRESS & RESULTS DASHBOARD MODAL / VIEW
+           ========================================================================== */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 50;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            max-width: 720px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .stat-box {
+            background-color: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+        }
+
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .history-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.65rem 0.85rem;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            gap: 0.5rem;
+        }
+
+        /* Toast Message Box (Replaces alert()) */
+        .toast-banner {
+            position: fixed;
+            bottom: 1.25rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: var(--bg-secondary);
+            padding: 0.75rem 1.25rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            z-index: 100;
+            pointer-events: none;
+            text-align: center;
+            max-width: 90vw;
+        }
+
+        .toast-banner.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 640px) {
+            header, .toolbar, .exercise-header {
+                padding: 0.65rem 0.85rem;
+            }
+            .brand h1 {
+                font-size: 1rem;
+            }
+            .scan-target {
+                width: 54px;
+                height: 54px;
+                font-size: 1.25rem;
+            }
+            .bisection-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+         HEADER & EXERCISE MODE TABS
+         ========================================================================== -->
+    <header>
+        <div class="brand">
+            <div class="brand-icon" aria-hidden="true">
+                <!-- Eye / Focus SVG Icon -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </div>
+            <div>
+                <h1>Visual Neglect Trainer</h1>
+                <span>Offline Spatial Attention & Scanning Therapy</span>
+            </div>
+        </div>
+
+        <nav class="nav-controls" aria-label="Training Exercises">
+            <button type="button" class="btn-tab active" data-mode="scanning" onclick="switchMode('scanning')">
+                1. Visual Scanning
+            </button>
+            <button type="button" class="btn-tab" data-mode="bisection" onclick="switchMode('bisection')">
+                2. Line Bisection
+            </button>
+            <button type="button" class="btn-tab" data-mode="cancellation" onclick="switchMode('cancellation')">
+                3. Star Cancellation
+            </button>
+            <button type="button" onclick="openProgressModal()">
+                📊 Progress
+            </button>
+        </nav>
+    </header>
+
+    <!-- ==========================================================================
+         THERAPY CONFIGURATION TOOLBAR
+         ========================================================================== -->
+    <section class="toolbar" aria-label="Therapy Settings">
+        <div class="setting-group">
+            <label class="setting-item">
+                <span>Neglect Side:</span>
+                <select id="neglectSideSelect" onchange="updateSettings()">
+                    <option value="left" selected>Left Neglect (Anchor Left)</option>
+                    <option value="right">Right Neglect (Anchor Right)</option>
+                    <option value="none">Balanced / No Anchor</option>
+                </select>
+            </label>
+
+            <label class="setting-item">
+                <span>Difficulty:</span>
+                <select id="difficultySelect" onchange="updateSettings()">
+                    <option value="easy">Easy (Large, Fewer Items)</option>
+                    <option value="medium" selected>Medium (Standard)</option>
+                    <option value="hard">Hard (Dense, Smaller)</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="setting-group">
+            <button type="button" id="anchorToggleBtn" class="toggle-btn" aria-pressed="true" onclick="toggleAnchor()">
+                🔴 Anchor Cue: ON
+            </button>
+            <button type="button" id="audioToggleBtn" class="toggle-btn" aria-pressed="true" onclick="toggleAudio()">
+                🔊 Audio: ON
+            </button>
+            <button type="button" id="contrastToggleBtn" class="toggle-btn" aria-pressed="false" onclick="toggleContrast()">
+                🌗 High Contrast
+            </button>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         MAIN WORKSPACE
+         ========================================================================== -->
+    <main>
+        <!-- Exercise Instructions & Live Telemetry -->
+        <div class="exercise-header">
+            <div class="exercise-info">
+                <h2 id="exerciseTitle">Visual Scanning & Target Search</h2>
+                <p id="exerciseDesc">Start from the red anchor edge and scan across the screen to tap all numbered targets in order (1, 2, 3...).</p>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-pill" id="statProgress">Found: 0 / 0</div>
+                <div class="stat-pill" id="statTimer">Time: 0.0s</div>
+                <button type="button" class="btn-sm" id="hintBtn" onclick="triggerHint()">💡 Hint</button>
+                <button type="button" class="btn-primary btn-sm" onclick="startCurrentExercise()">↻ New Trial</button>
+            </div>
+        </div>
+
+        <!-- Interactive Therapy Canvas / Arena -->
+        <div class="arena-wrapper" id="arenaWrapper">
+            <!-- Visual Anchor Strip for Neglect Cueing -->
+            <div class="anchor-strip left" id="anchorStrip" aria-hidden="true"></div>
+
+            <!-- Dynamic Exercise Content Container -->
+            <div id="exerciseContainer" style="flex:1; display:flex; flex-direction:column;"></div>
+        </div>
+    </main>
+
+    <!-- ==========================================================================
+         PROGRESS & CLINICAL SUMMARY MODAL
+         ========================================================================== -->
+    <div class="modal-backdrop" id="progressModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modalTitle">Session Progress & Spatial Bias Summary</h2>
+                <button type="button" class="btn-sm" onclick="closeProgressModal()">✕ Close</button>
+            </div>
+
+            <div class="grid-stats" id="summaryStatsGrid">
+                <!-- Populated dynamically -->
+            </div>
+
+            <div>
+                <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Recent Completed Trials (Saved Offline)</h3>
+                <div class="history-list" id="historyList">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                <button type="button" class="btn-sm" style="color: var(--danger-color);" onclick="clearSavedHistory()">🗑️ Clear History</button>
+                <button type="button" class="btn-primary btn-sm" onclick="closeProgressModal()">Continue Training</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-blocking Toast Message Box -->
+    <div class="toast-banner" id="toastBanner" role="status" aria-live="polite"></div>
+
+    <!-- ==========================================================================
+         APPLICATION LOGIC (100% OFFLINE JAVASCRIPT + WEB AUDIO SYNTHESIZER)
+         ========================================================================== -->
+    <script>
+        /**
+         * Global State & Configuration
+         */
+        const state = {
+            mode: 'scanning', // 'scanning' | 'bisection' | 'cancellation'
+            neglectSide: 'left', // 'left' | 'right' | 'none'
+            difficulty: 'medium', // 'easy' | 'medium' | 'hard'
+            anchorEnabled: true,
+            audioEnabled: true,
+            highContrast: false,
+            timerInterval: null,
+            startTime: 0,
+            elapsedSeconds: 0,
+            trialActive: false,
+            // Exercise-specific runtime data
+            scanning: {
+                targets: [],
+                nextNumber: 1,
+                totalCount: 0,
+                leftFound: 0,
+                rightFound: 0
+            },
+            bisection: {
+                trialIndex: 0,
+                totalTrials: 5,
+                deviations: [], // % deviation from true center (- = left, + = right)
+                answeredCurrent: false,
+                lineLeftPct: 10,
+                lineWidthPct: 80
+            },
+            cancellation: {
+                items: [],
+                totalSmallStars: 0,
+                foundSmallStars: 0,
+                falsePositives: 0,
+                leftMissed: 0,
+                rightMissed: 0
+            }
+        };
+
+        const STORAGE_KEY = 'visual_neglect_trainer_history_v1';
+
+        /**
+         * Offline Web Audio API Synthesizer (No external audio files needed)
+         */
+        let audioCtx = null;
+
+        function playTone(type) {
+            if (!state.audioEnabled) return;
+            try {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12); // E5
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === 'complete') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                    osc.start(now);
+                    osc.stop(now + 0.45);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(130, now + 0.18);
+                    gain.gain.setValueAtTime(0.14, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'hint') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                // Gracefully ignore audio errors if blocked by browser policy
+            }
+        }
+
+        /**
+         * Non-blocking Toast Message Notification
+         */
+        let toastTimeout = null;
+        function showToast(message) {
+            const banner = document.getElementById('toastBanner');
+            banner.textContent = message;
+            banner.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.remove('show');
+            }, 3000);
+        }
+
+        /**
+         * Timer Management
+         */
+        function startTimer() {
+            stopTimer();
+            state.startTime = performance.now();
+            state.elapsedSeconds = 0;
+            state.trialActive = true;
+            updateTimerDisplay();
+
+            state.timerInterval = setInterval(() => {
+                if (!state.trialActive) return;
+                state.elapsedSeconds = (performance.now() - state.startTime) / 1000;
+                updateTimerDisplay();
+            }, 100);
+        }
+
+        function stopTimer() {
+            state.trialActive = false;
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('statTimer').textContent = `Time: ${state.elapsedSeconds.toFixed(1)}s`;
+        }
+
+        /**
+         * Settings & Accessibility Controls
+         */
+        function updateSettings() {
+            state.neglectSide = document.getElementById('neglectSideSelect').value;
+            state.difficulty = document.getElementById('difficultySelect').value;
+            renderAnchorStrip();
+            startCurrentExercise();
+        }
+
+        function toggleAnchor() {
+            state.anchorEnabled = !state.anchorEnabled;
+            const btn = document.getElementById('anchorToggleBtn');
+            btn.setAttribute('aria-pressed', state.anchorEnabled);
+            btn.textContent = state.anchorEnabled ? '🔴 Anchor Cue: ON' : '⚪ Anchor Cue: OFF';
+            renderAnchorStrip();
+        }
+
+        function toggleAudio() {
+            state.audioEnabled = !state.audioEnabled;
+            const btn = document.getElementById('audioToggleBtn');
+            btn.setAttribute('aria-pressed', state.audioEnabled);
+            btn.textContent = state.audioEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+            if (state.audioEnabled) playTone('success');
+        }
+
+        function toggleContrast() {
+            state.highContrast = !state.highContrast;
+            const btn = document.getElementById('contrastToggleBtn');
+            btn.setAttribute('aria-pressed', state.highContrast);
+            document.body.classList.toggle('high-contrast', state.highContrast);
+        }
+
+        function renderAnchorStrip() {
+            const strip = document.getElementById('anchorStrip');
+            strip.className = 'anchor-strip';
+            if (state.anchorEnabled && state.neglectSide !== 'none') {
+                strip.classList.add(state.neglectSide);
+            }
+        }
+
+        /**
+         * Navigation Between Exercises
+         */
+        function switchMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.btn-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            startCurrentExercise();
+        }
+
+        function startCurrentExercise() {
+            stopTimer();
+            const hintBtn = document.getElementById('hintBtn');
+
+            if (state.mode === 'scanning') {
+                hintBtn.style.display = 'inline-flex';
+                initScanningExercise();
+            } else if (state.mode === 'bisection') {
+                hintBtn.style.display = 'none';
+                initBisectionExercise();
+            } else if (state.mode === 'cancellation') {
+                hintBtn.style.display = 'inline-flex';
+                initCancellationExercise();
+            }
+        }
+
+        /**
+         * Utility: Generate Non-Overlapping Coordinates in Percentages (8% to 92%)
+         */
+        function generateScatteredPositions(count, minDistancePct) {
+            const positions = [];
+            let attempts = 0;
+            const maxAttempts = 3000;
+
+            while (positions.length < count && attempts < maxAttempts) {
+                attempts++;
+                const x = 8 + Math.random() * 84; // Keep away from extreme edges
+                const y = 10 + Math.random() * 80;
+
+                let tooClose = false;
+                for (const pos of positions) {
+                    const dx = pos.x - x;
+                    const dy = pos.y - y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < minDistancePct) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                if (!tooClose) {
+                    positions.push({ x, y });
+                }
+            }
+            return positions;
+        }
+
+        /* ==========================================================================
+           EXERCISE 1: VISUAL SCANNING & TARGET SEARCH
+           ========================================================================== */
+        function initScanningExercise() {
+            const countMap = { easy: 8, medium: 12, hard: 18 };
+            const distMap = { easy: 18, medium: 14, hard: 11 };
+            const count = countMap[state.difficulty];
+            const minDist = distMap[state.difficulty];
+
+            document.getElementById('exerciseTitle').textContent = 'Visual Scanning & Target Search';
+            const sideText = state.neglectSide === 'right' ? 'right' : 'left';
+            document.getElementById('exerciseDesc').textContent =
+                `Begin scanning from the ${sideText} edge and tap the numbered circles in ascending order (1 to ${count}).`;
+
+            const positions = generateScatteredPositions(count, minDist);
+
+            // Order targets spatially from the neglected side toward the intact side to encourage systematic scanning
+            positions.sort((a, b) => {
+                if (state.neglectSide === 'right') {
+                    return (b.x - a.x) + (Math.random() * 18 - 9);
+                }
+                return (a.x - b.x) + (Math.random() * 18 - 9);
+            });
+
+            state.scanning = {
+                targets: positions.map((pos, idx) => ({
+                    id: idx + 1,
+                    x: pos.x,
+                    y: pos.y,
+                    found: false
+                })),
+                nextNumber: 1,
+                totalCount: positions.length
+            };
+
+            document.getElementById('statProgress').textContent = `Found: 0 / ${state.scanning.totalCount}`;
+
+            const container = document.getElementById('exerciseContainer');
+            container.innerHTML = `<div class="scanning-field" id="scanningField"></div>`;
+            const field = document.getElementById('scanningField');
+
+            const palette = ['#2563eb', '#7c3aed', '#0891b2', '#d97706', '#db2777'];
+
+            state.scanning.targets.forEach(target => {
+                const el = document.createElement('button');
+                el.type = 'button';
+                el.className = 'scan-target';
+                el.id = `scan-target-${target.id}`;
+                el.style.left = `${target.x}%`;
+                el.style.top = `${target.y}%`;
+                el.textContent = target.id;
+                el.setAttribute('aria-label', `Target number ${target.id}`);
+
+                if (state.highContrast) {
+                    el.style.backgroundColor = '#facc15';
+                    el.style.color = '#000000';
+                } else {
+                    el.style.backgroundColor = palette[target.id % palette.length];
+                    el.style.color = '#ffffff';
+                }
+
+                el.addEventListener('click', () => handleScanTargetClick(target.id));
+                field.appendChild(el);
+            });
+
+            startTimer();
+        }
+
+        function handleScanTargetClick(id) {
+            if (!state.trialActive) return;
+
+            if (id === state.scanning.nextNumber) {
+                const target = state.scanning.targets.find(t => t.id === id);
+                target.found = true;
+                const el = document.getElementById(`scan-target-${id}`);
+                el.classList.remove('hint-pulse');
+                el.classList.add('found');
+
+                state.scanning.nextNumber++;
+                const foundCount = state.scanning.nextNumber - 1;
+                document.getElementById('statProgress').textContent =
+                    `Found: ${foundCount} / ${state.scanning.totalCount}`;
+
+                if (foundCount === state.scanning.totalCount) {
+                    stopTimer();
+                    playTone('complete');
+                    showToast(`Great job! All ${foundCount} targets found in ${state.elapsedSeconds.toFixed(1)}s.`);
+                    saveTrialRecord({
+                        mode: 'Visual Scanning',
+                        difficulty: state.difficulty,
+                        neglectSide: state.neglectSide,
+                        timeSec: Number(state.elapsedSeconds.toFixed(1)),
+                        metricLabel: 'Accuracy',
+                        metricValue: '100%'
+                    });
+                } else {
+                    playTone('success');
+                }
+            } else if (id > state.scanning.nextNumber) {
+                playTone('error');
+                showToast(`Look for number ${state.scanning.nextNumber} next! Scan from the ${state.neglectSide === 'right' ? 'right' : 'left'} edge.`);
+            }
+        }
+
+        /* ==========================================================================
+           EXERCISE 2: LINE BISECTION TEST & TRAINING
+           ========================================================================== */
+        function initBisectionExercise() {
+            document.getElementById('exerciseTitle').textContent = 'Line Bisection Training';
+            document.getElementById('exerciseDesc').textContent =
+                'Tap or click the exact center (midpoint) of the horizontal line. Visual feedback will show your spatial accuracy.';
+
+            state.bisection = {
+                trialIndex: 1,
+                totalTrials: 5,
+                deviations: [],
+                answeredCurrent: false,
+                lineLeftPct: 10,
+                lineWidthPct: 80
+            };
+
+            renderBisectionTrial();
+            startTimer();
+        }
+
+        function renderBisectionTrial() {
+            const b = state.bisection;
+            b.answeredCurrent = false;
+
+            // Vary line width and horizontal offset per trial to prevent muscle-memory guessing
+            const widths = { easy: [75, 85], medium: [55, 80], hard: [35, 70] };
+            const [minW, maxW] = widths[state.difficulty];
+            b.lineWidthPct = Math.round(minW + Math.random() * (maxW - minW));
+            const maxLeft = 92 - b.lineWidthPct;
+            b.lineLeftPct = Math.round(8 + Math.random() * Math.max(2, maxLeft - 8));
+
+            document.getElementById('statProgress').textContent = `Line: ${b.trialIndex} / ${b.totalTrials}`;
+
+            const container = document.getElementById('exerciseContainer');
+            container.innerHTML = `
+                <div class="bisection-area">
+                    <div class="line-container" id="bisectionLineContainer">
+                        <div class="bisection-line" id="bisectionLine"
+                             style="left: ${b.lineLeftPct}%; width: ${b.lineWidthPct}%;"
+                             role="button" tabindex="0" aria-label="Horizontal line to bisect">
+                        </div>
+                    </div>
+                    <div class="bisection-feedback" id="bisectionFeedback">
+                        <strong>Trial ${b.trialIndex} of ${b.totalTrials}:</strong> Tap where you believe the exact middle of the black bar is located.
+                    </div>
+                </div>
+            `;
+
+            const lineEl = document.getElementById('bisectionLine');
+            lineEl.addEventListener('click', handleBisectionClick);
+        }
+
+        function handleBisectionClick(event) {
+            const b = state.bisection;
+            if (b.answeredCurrent) return;
+            b.answeredCurrent = true;
+
+            const lineEl = document.getElementById('bisectionLine');
+            const rect = lineEl.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickPct = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+
+            // Deviation in percentage relative to full line length (-50% = far left, 0% = exact center, +50% = far right)
+            const deviationPct = Number((clickPct - 50).toFixed(1));
+            b.deviations.push(deviationPct);
+
+            // Render user mark and true midpoint mark
+            const userMarker = document.createElement('div');
+            userMarker.className = 'bisection-marker marker-user';
+            userMarker.style.left = `${clickPct}%`;
+            userMarker.innerHTML = `<span class="marker-label">Your Mark (${clickPct.toFixed(0)}%)</span>`;
+
+            const trueMarker = document.createElement('div');
+            trueMarker.className = 'bisection-marker marker-true';
+            trueMarker.style.left = `50%`;
+            trueMarker.innerHTML = `<span class="marker-label" style="top:auto; bottom:-24px;">True Center (50%)</span>`;
+
+            lineEl.appendChild(trueMarker);
+            lineEl.appendChild(userMarker);
+
+            const absDev = Math.abs(deviationPct);
+            let directionText = 'Spot on!';
+            if (deviationPct < -1.5) directionText = `${absDev}% to the LEFT of center`;
+            else if (deviationPct > 1.5) directionText = `${absDev}% to the RIGHT of center`;
+
+            if (absDev <= 5) {
+                playTone('success');
+            } else {
+                playTone('hint');
+            }
+
+            const isLast = b.trialIndex >= b.totalTrials;
+            const feedbackEl = document.getElementById('bisectionFeedback');
+            feedbackEl.innerHTML = `
+                <p style="margin-bottom:0.75rem;">
+                    <strong>Result:</strong> Your mark was <strong>${directionText}</strong>.
+                </p>
+                <button type="button" class="btn-primary" onclick="${isLast ? 'finishBisectionSet()' : 'nextBisectionTrial()'}">
+                    ${isLast ? 'Finish Set & View Summary' : 'Next Line →'}
+                </button>
+            `;
+        }
+
+        function nextBisectionTrial() {
+            state.bisection.trialIndex++;
+            renderBisectionTrial();
+        }
+
+        function finishBisectionSet() {
+            stopTimer();
+            playTone('complete');
+            const devs = state.bisection.deviations;
+            const avgSigned = devs.reduce((acc, v) => acc + v, 0) / devs.length;
+            const avgAbs = devs.reduce((acc, v) => acc + Math.abs(v), 0) / devs.length;
+
+            const biasDir = avgSigned < -1 ? 'Leftward' : (avgSigned > 1 ? 'Rightward' : 'Balanced');
+            const summaryText = `${avgAbs.toFixed(1)}% avg error (${biasDir})`;
+
+            document.getElementById('bisectionFeedback').innerHTML = `
+                <h3 style="margin-bottom:0.4rem;">Set Complete!</h3>
+                <p style="margin-bottom:0.75rem;">
+                    Average Midpoint Error: <strong>${avgAbs.toFixed(1)}%</strong> | Spatial Bias: <strong>${biasDir} (${avgSigned > 0 ? '+' : ''}${avgSigned.toFixed(1)}%)</strong>
+                </p>
+                <button type="button" class="btn-primary" onclick="startCurrentExercise()">↻ Practice Again</button>
+            `;
+
+            saveTrialRecord({
+                mode: 'Line Bisection',
+                difficulty: state.difficulty,
+                neglectSide: state.neglectSide,
+                timeSec: Number(state.elapsedSeconds.toFixed(1)),
+                metricLabel: 'Avg Error',
+                metricValue: summaryText
+            });
+        }
+
+        /* ==========================================================================
+           EXERCISE 3: STAR CANCELLATION (CLINICAL SCREENING & PRACTICE)
+           ========================================================================== */
+        function initCancellationExercise() {
+            const configMap = {
+                easy: { stars: 10, distractors: 10, minDist: 14 },
+                medium: { stars: 16, distractors: 18, minDist: 11 },
+                hard: { stars: 24, distractors: 26, minDist: 9 }
+            };
+            const cfg = configMap[state.difficulty];
+            const totalItems = cfg.stars + cfg.distractors;
+
+            document.getElementById('exerciseTitle').textContent = 'Star Cancellation Task';
+            document.getElementById('exerciseDesc').textContent =
+                'Tap ONLY the small filled stars (★) across the entire screen. Ignore large stars and letters.';
+
+            const positions = generateScatteredPositions(totalItems, cfg.minDist);
+            const actualStars = Math.min(cfg.stars, Math.floor(positions.length / 2));
+
+            const distractorSymbols = ['☆', 'A', 'E', 'H', 'M', 'W', '◆'];
+            const items = positions.map((pos, idx) => {
+                const isTarget = idx < actualStars;
+                return {
+                    id: idx,
+                    x: pos.x,
+                    y: pos.y,
+                    isTarget,
+                    symbol: isTarget ? '★' : distractorSymbols[idx % distractorSymbols.length],
+                    isLarge: !isTarget && idx % 3 === 0,
+                    crossed: false
+                };
+            });
+
+            state.cancellation = {
+                items,
+                totalSmallStars: actualStars,
+                foundSmallStars: 0,
+                falsePositives: 0
+            };
+
+            document.getElementById('statProgress').textContent = `Stars: 0 / ${actualStars}`;
+
+            const container = document.getElementById('exerciseContainer');
+            container.innerHTML = `<div class="cancellation-field" id="cancellationField"></div>`;
+            const field = document.getElementById('cancellationField');
+
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'cancel-item';
+                el.id = `cancel-item-${item.id}`;
+                el.style.left = `${item.x}%`;
+                el.style.top = `${item.y}%`;
+                el.style.fontSize = item.isTarget ? '1.35rem' : (item.isLarge ? '2.2rem' : '1.45rem');
+                el.style.fontWeight = '700';
+                el.textContent = item.symbol;
+                el.setAttribute('role', 'button');
+                el.setAttribute('aria-label', item.isTarget ? 'Small target star' : 'Distractor symbol');
+
+                el.addEventListener('click', () => handleCancelItemClick(item.id));
+                field.appendChild(el);
+            });
+
+            startTimer();
+        }
+
+        function handleCancelItemClick(id) {
+            if (!state.trialActive) return;
+            const item = state.cancellation.items.find(i => i.id === id);
+            if (!item || item.crossed) return;
+
+            item.crossed = true;
+            const el = document.getElementById(`cancel-item-${id}`);
+            el.classList.remove('hint-pulse');
+
+            if (item.isTarget) {
+                el.classList.add('crossed');
+                state.cancellation.foundSmallStars++;
+                document.getElementById('statProgress').textContent =
+                    `Stars: ${state.cancellation.foundSmallStars} / ${state.cancellation.totalSmallStars}`;
+
+                if (state.cancellation.foundSmallStars === state.cancellation.totalSmallStars) {
+                    stopTimer();
+                    playTone('complete');
+                    const errText = state.cancellation.falsePositives > 0
+                        ? ` (${state.cancellation.falsePositives} distractor taps)`
+                        : ' with zero errors!';
+                    showToast(`All ${state.cancellation.totalSmallStars} small stars cancelled${errText}`);
+
+                    saveTrialRecord({
+                        mode: 'Star Cancellation',
+                        difficulty: state.difficulty,
+                        neglectSide: state.neglectSide,
+                        timeSec: Number(state.elapsedSeconds.toFixed(1)),
+                        metricLabel: 'Completed',
+                        metricValue: `${state.cancellation.foundSmallStars}/${state.cancellation.totalSmallStars} (${state.cancellation.falsePositives} err)`
+                    });
+                } else {
+                    playTone('success');
+                }
+            } else {
+                el.classList.add('crossed-error');
+                state.cancellation.falsePositives++;
+                playTone('error');
+                showToast('Tap only the small filled stars (★).');
+            }
+        }
+
+        /* ==========================================================================
+           CLINICAL HINT SYSTEM (GUIDES ATTENTION TO NEGLECTED HEMISPACE)
+           ========================================================================== */
+        function triggerHint() {
+            if (!state.trialActive) return;
+            playTone('hint');
+
+            if (state.mode === 'scanning') {
+                const nextEl = document.getElementById(`scan-target-${state.scanning.nextNumber}`);
+                if (nextEl) {
+                    nextEl.classList.add('hint-pulse');
+                    const target = state.scanning.targets.find(t => t.id === state.scanning.nextNumber);
+                    const side = target.x < 50 ? 'LEFT' : 'RIGHT';
+                    showToast(`Hint: Number ${target.id} is on the ${side} half of the screen.`);
+                }
+            } else if (state.mode === 'cancellation') {
+                const remaining = state.cancellation.items.filter(i => i.isTarget && !i.crossed);
+                if (remaining.length > 0) {
+                    // Prioritize remaining stars on the neglected side
+                    remaining.sort((a, b) => state.neglectSide === 'right' ? b.x - a.x : a.x - b.x);
+                    const chosen = remaining[0];
+                    const el = document.getElementById(`cancel-item-${chosen.id}`);
+                    if (el) el.classList.add('hint-pulse');
+                    const side = chosen.x < 50 ? 'LEFT' : 'RIGHT';
+                    showToast(`Hint: Look toward the ${side} side for a remaining small star.`);
+                }
+            }
+        }
+
+        /* ==========================================================================
+           OFFLINE LOCALSTORAGE PROGRESS TRACKER
+           ========================================================================== */
+        function getHistory() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveTrialRecord(record) {
+            try {
+                const history = getHistory();
+                history.unshift({
+                    ...record,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 50)));
+            } catch (e) {
+                // Ignore storage quota errors in restricted offline contexts
+            }
+        }
+
+        function openProgressModal() {
+            const history = getHistory();
+            const statsGrid = document.getElementById('summaryStatsGrid');
+            const listEl = document.getElementById('historyList');
+
+            const totalSessions = history.length;
+            const avgTime = totalSessions > 0
+                ? (history.reduce((sum, item) => sum + item.timeSec, 0) / totalSessions).toFixed(1) + 's'
+                : '—';
+
+            const bisectionRecords = history.filter(h => h.mode === 'Line Bisection');
+            const latestBisection = bisectionRecords.length > 0 ? bisectionRecords[0].metricValue : 'No data yet';
+
+            statsGrid.innerHTML = `
+                <div class="stat-box">
+                    <div class="value">${totalSessions}</div>
+                    <div class="label">Completed Trials</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">${avgTime}</div>
+                    <div class="label">Avg Completion Time</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" style="font-size:1.1rem;">${latestBisection}</div>
+                    <div class="label">Latest Bisection Accuracy</div>
+                </div>
+            `;
+
+            if (history.length === 0) {
+                listEl.innerHTML = `<p style="color:var(--text-secondary); font-size:0.9rem;">No completed trials recorded yet. Complete an exercise to track progress offline.</p>`;
+            } else {
+                listEl.innerHTML = history.map(item => `
+                    <div class="history-row">
+                        <div>
+                            <strong>${item.mode}</strong>
+                            <span style="color:var(--text-secondary);">(${item.difficulty}, ${item.neglectSide} cue)</span>
+                        </div>
+                        <div>
+                            <span>⏱ ${item.timeSec}s</span> &bull;
+                            <strong>${item.metricValue}</strong> &bull;
+                            <span style="color:var(--text-secondary);">${item.timestamp}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('progressModal').classList.add('open');
+        }
+
+        function closeProgressModal() {
+            document.getElementById('progressModal').classList.remove('open');
+        }
+
+        function clearSavedHistory() {
+            localStorage.removeItem(STORAGE_KEY);
+            openProgressModal();
+            showToast('Training history cleared.');
+        }
+
+        // Initialize application on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAnchorStrip();
+            startCurrentExercise();
+        });
+    </script>
+</body>
+</html>

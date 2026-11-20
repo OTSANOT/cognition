@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digit Span Memory Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121826;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 26px;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 16px;
+      background: #1e293b;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+
+    select {
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid #475569;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .hint {
+      font-size: 15px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    button {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 17px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .box {
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      width: 300px;
+      height: 85px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      font-weight: bold;
+      letter-spacing: 6px;
+      color: #38bdf8;
+      margin-bottom: 14px;
+    }
+
+    input {
+      background: #1e293b;
+      color: #ffffff;
+      border: 2px solid #475569;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 26px;
+      text-align: center;
+      width: 280px;
+      letter-spacing: 6px;
+      margin-bottom: 14px;
+    }
+
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 86px);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .num-btn {
+      background: #1e293b;
+      border: 2px solid #334155;
+      color: #ffffff;
+      height: 62px;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 10px;
+      padding: 0;
+    }
+
+    .num-btn:hover {
+      background: #334155;
+      border-color: #60a5fa;
+    }
+
+    .num-btn:active {
+      background: #2563eb;
+    }
+
+    .num-btn.util {
+      background: #334155;
+      font-size: 20px;
+    }
+
+    .num-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    #message {
+      margin-top: 14px;
+      font-size: 18px;
+      color: #34d399;
+      min-height: 24px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Digit Span Memory</h1>
+
+  <div class="top-bar">
+    <label>
+      Mode:
+      <select id="modeSelect" onchange="changeMode()">
+        <option value="forward" selected>Forward</option>
+        <option value="backward">Backward</option>
+      </select>
+    </label>
+    <span>Digits: <strong id="level">3</strong></span>
+    <span>Best: <strong id="best">0</strong></span>
+  </div>
+
+  <div class="hint" id="modeHint">Enter the numbers in the SAME order shown.</div>
+
+  <div class="box" id="display">Press Start</div>
+
+  <input type="text" id="answer" placeholder="Tap numbers" readonly />
+
+  <div class="numpad" id="numpad">
+    <button type="button" class="num-btn" onclick="pressKey('1')" disabled>1</button>
+    <button type="button" class="num-btn" onclick="pressKey('2')" disabled>2</button>
+    <button type="button" class="num-btn" onclick="pressKey('3')" disabled>3</button>
+    <button type="button" class="num-btn" onclick="pressKey('4')" disabled>4</button>
+    <button type="button" class="num-btn" onclick="pressKey('5')" disabled>5</button>
+    <button type="button" class="num-btn" onclick="pressKey('6')" disabled>6</button>
+    <button type="button" class="num-btn" onclick="pressKey('7')" disabled>7</button>
+    <button type="button" class="num-btn" onclick="pressKey('8')" disabled>8</button>
+    <button type="button" class="num-btn" onclick="pressKey('9')" disabled>9</button>
+    <button type="button" class="num-btn util" onclick="clearInput()" disabled>C</button>
+    <button type="button" class="num-btn" onclick="pressKey('0')" disabled>0</button>
+    <button type="button" class="num-btn util" onclick="backspaceInput()" disabled>&#8592;</button>
+  </div>
+
+  <div>
+    <button type="button" id="startBtn" onclick="startRound()">Start</button>
+    <button type="button" id="checkBtn" onclick="checkAnswer()" style="display:none; background:#059669;">Check Answer</button>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    var digits = 3;
+    var bestForward = 0;
+    var bestBackward = 0;
+    var target = "";
+    var canType = false;
+    var showTimer = null;
+
+    function setPadEnabled(enabled) {
+      canType = enabled;
+      var btns = document.getElementById("numpad").getElementsByTagName("button");
+      for (var i = 0; i < btns.length; i++) {
+        btns.item(i).disabled = !enabled;
+      }
+    }
+
+    function changeMode() {
+      if (showTimer) {
+        clearTimeout(showTimer);
+        showTimer = null;
+      }
+      var mode = document.getElementById("modeSelect").value;
+      digits = 3;
+      document.getElementById("level").textContent = "3";
+      document.getElementById("best").textContent = (mode === "forward") ? bestForward : bestBackward;
+      document.getElementById("modeHint").textContent = (mode === "forward")
+        ? "Enter the numbers in the SAME order shown."
+        : "Enter the numbers in REVERSE order (backwards).";
+      document.getElementById("display").textContent = "Press Start";
+      document.getElementById("answer").value = "";
+      document.getElementById("message").textContent = "";
+      document.getElementById("checkBtn").style.display = "none";
+      document.getElementById("startBtn").style.display = "inline-block";
+      setPadEnabled(false);
+    }
+
+    function pressKey(num) {
+      if (!canType) return;
+      var input = document.getElementById("answer");
+      input.value = input.value + num;
+    }
+
+    function clearInput() {
+      if (!canType) return;
+      document.getElementById("answer").value = "";
+    }
+
+    function backspaceInput() {
+      if (!canType) return;
+      var input = document.getElementById("answer");
+      input.value = input.value.slice(0, -1);
+    }
+
+    function startRound() {
+      if (showTimer) clearTimeout(showTimer);
+      document.getElementById("message").textContent = "";
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("checkBtn").style.display = "none";
+      document.getElementById("answer").value = "";
+      setPadEnabled(false);
+
+      target = "";
+      for (var i = 0; i < digits; i++) {
+        target = target + String(Math.floor(Math.random() * 10));
+      }
+
+      var display = document.getElementById("display");
+      display.textContent = target;
+
+      showTimer = setTimeout(function () {
+        display.textContent = "?????";
+        setPadEnabled(true);
+        document.getElementById("checkBtn").style.display = "inline-block";
+      }, 1200 + digits * 300);
+    }
+
+    function checkAnswer() {
+      var mode = document.getElementById("modeSelect").value;
+      var input = document.getElementById("answer");
+      var msg = document.getElementById("message");
+      document.getElementById("checkBtn").style.display = "none";
+      setPadEnabled(false);
+
+      var expected = (mode === "forward")
+        ? target
+        : target.split("").reverse().join("");
+
+      if (input.value === expected) {
+        if (mode === "forward" && digits > bestForward) {
+          bestForward = digits;
+          document.getElementById("best").textContent = bestForward;
+        }
+        if (mode === "backward" && digits > bestBackward) {
+          bestBackward = digits;
+          document.getElementById("best").textContent = bestBackward;
+        }
+        digits++;
+        document.getElementById("level").textContent = digits;
+        msg.style.color = "#34d399";
+        msg.textContent = "Correct! Next: " + digits + " digits.";
+      } else {
+        msg.style.color = "#f87171";
+        msg.textContent = "Wrong (expected " + expected + "). Reset to 3.";
+        digits = 3;
+        document.getElementById("level").textContent = "3";
+      }
+
+      document.getElementById("display").textContent = target;
+      document.getElementById("startBtn").style.display = "inline-block";
+    }
+  </script>
+</body>
+</html>

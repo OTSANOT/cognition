@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #050510; color: #fff; font-family: sans-serif; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #ui { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; }
+  .box { background: rgba(0,0,0,0.8); border: 2px solid #0ff; padding: 8px 14px; border-radius: 6px; font-weight: bold; }
+  #banner { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); background: #ff0055; border: 3px solid #fff; padding: 20px 30px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 20px; display: none; cursor: pointer; z-index: 20; }
+  #btns { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; }
+  .btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(0,255,255,0.25); border: 2px solid #0ff; color: #0ff; font-size: 24px; font-weight: bold; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+  #fire { background: rgba(255,0,85,0.3); border-color: #ff0055; color: #ff88aa; font-size: 16px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div class="box">SCORE: <span id="sc">0</span></div>
+  <div class="box">AMMO: <span id="am">3/3</span></div>
+</div>
+<div id="banner" onclick="restart()">EATEN BY A MONSTER!<br><small>CLICK TO RESTART</small></div>
+<div id="btns">
+  <div style="display:flex; gap:15px;">
+    <div class="btn" id="bL">◀</div>
+    <div class="btn" id="bR">▶</div>
+  </div>
+  <div class="btn" id="fire">FIRE</div>
+</div>
+
+<script>
+var c = document.getElementById('c');
+var ctx = c.getContext('2d');
+var W = c.width = window.innerWidth;
+var H = c.height = window.innerHeight;
+
+window.onresize = function() {
+  W = c.width = window.innerWidth;
+  H = c.height = window.innerHeight;
+};
+
+var lanes = [-6, -3, 0, 3, 6];
+var edges = [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5];
+var lane = 2;
+var px = 0;
+var score = 0;
+var speed = 40;
+var playing = true;
+var ammo = 3;
+var reload = 0;
+var obs = [];
+var bullets = [];
+var spawnT = 0.5;
+var gridZ = 0;
+var tAnim = 0;
+
+function proj(x, y, z) {
+  var dz = z + 10;
+  if (dz <= 0.1) return null;
+  var s = 550 / dz;
+  return { x: W / 2 + x * s, y: H / 2 - (y - 6.5) * s, s: s };
+}
+
+function box3d(x, y, z, w, h, d, col1, col2) {
+  var hw = w / 2, hh = h / 2, hd = d / 2;
+  var p1 = proj(x - hw, y - hh, z - hd), p2 = proj(x + hw, y - hh, z - hd);
+  var p3 = proj(x + hw, y + hh, z - hd), p4 = proj(x - hw, y + hh, z - hd);
+  var p5 = proj(x - hw, y + hh, z + hd), p6 = proj(x + hw, y + hh, z + hd);
+  if (!p1 || !p5) return;
+
+  ctx.fillStyle = col2;
+  ctx.beginPath();
+  ctx.moveTo(p4.x, p4.y); ctx.lineTo(p3.x, p3.y);
+  ctx.lineTo(p6.x, p6.y); ctx.lineTo(p5.x, p5.y);
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = col1;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+  ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+}
+
+function moveL() { if (!playing) restart(); else if (lane > 0) lane--; }
+function moveR() { if (!playing) restart(); else if (lane < 4) lane++; }
+function shoot() { if (!playing) restart(); else if (ammo > 0) { ammo--; bullets.push({ x: px, z: 2 }); } }
+
+function restart() {
+  obs = []; bullets = []; lane = 2; px = 0; score = 0; speed = 40; ammo = 3; reload = 0; playing = true;
+  document.getElementById('banner').style.display = 'none';
+}
+
+document.getElementById('bL').onclick = moveL;
+document.getElementById('bR').onclick = moveR;
+document.getElementById('fire').onclick = shoot;
+
+window.onkeydown = function(e) {
+  if (!playing) { restart(); return; }
+  if (e.key === 'ArrowLeft' || e.key === 'a') moveL();
+  if (e.key === 'ArrowRight' || e.key === 'd') moveR();
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') shoot();
+};
+
+var last = Date.now();
+function loop() {
+  var now = Date.now();
+  var dt = Math.min((now - last) / 1000, 0.1);
+  last = now;
+
+  ctx.fillStyle = '#050510';
+  ctx.fillRect(0, 0, W, H);
+
+  if (playing) {
+    tAnim += dt;
+    score += dt * 10;
+    speed += dt * 0.4;
+    gridZ = (gridZ + speed * dt) % 10;
+    px += (lanes[lane] - px) * Math.min(1, dt * 15);
+
+    if (ammo < 3) {
+      reload += dt;
+      if (reload >= 2.5) { ammo++; reload = 0; }
+    }
+
+    spawnT -= dt;
+    if (spawnT <= 0) {
+      var rLane = Math.floor(Math.random() * 5);
+      obs.push({ x: lanes[rLane], z: 110, red: Math.random() < 0.5, ph: Math.random() * 6 });
+      spawnT = Math.max(0.35, 1.1 - speed * 0.008);
+    }
+  }
+
+  ctx.strokeStyle = '#1b263b';
+  ctx.lineWidth = 2;
+  for (var eIdx = 0; eIdx < 6; eIdx++) {
+    var pN = proj(edges[eIdx], 0, -5);
+    var pF = proj(edges[eIdx], 0, 120);
+    if (pN && pF) { ctx.beginPath(); ctx.moveTo(pN.x, pN.y); ctx.lineTo(pF.x, pF.y); ctx.stroke(); }
+  }
+
+  for (var z = 0; z < 120; z += 10) {
+    var gz = z - gridZ;
+    var pL = proj(-7.5, 0, gz), pR = proj(7.5, 0, gz);
+    if (pL && pR) { ctx.beginPath(); ctx.moveTo(pL.x, pL.y); ctx.lineTo(pR.x, pR.y); ctx.stroke(); }
+  }
+
+  for (var bIdx = bullets.length - 1; bIdx >= 0; bIdx--) {
+    var b = bullets[bIdx];
+    if (playing) b.z += 95 * dt;
+    box3d(b.x, 1.0, b.z, 0.35, 0.35, 1.2, '#0ff', '#fff');
+    if (b.z > 120) bullets.splice(bIdx, 1);
+  }
+
+  obs.sort(function(a, b) { return b.z - a.z; });
+  for (var oIdx = obs.length - 1; oIdx >= 0; oIdx--) {
+    var o = obs[oIdx];
+    if (playing) o.z -= speed * dt;
+
+    var hit = false;
+    for (var j = bullets.length - 1; j >= 0; j--) {
+      if (Math.abs(bullets[j].x - o.x) < 1.3 && Math.abs(bullets[j].z - o.z) < 2.2) {
+        bullets.splice(j, 1); hit = true; score += 25; break;
+      }
+    }
+    if (hit) { obs.splice(oIdx, 1); continue; }
+
+    var hop = Math.abs(Math.sin(tAnim * 8 + o.ph)) * 0.45;
+    var c1 = o.red ? '#d90429' : '#3a405a';
+    var c2 = o.red ? '#ff4d6d' : '#687496';
+    box3d(o.x, 1.2 + hop, o.z, 1.8, 1.8, 1.6, c1, c2);
+
+    if (playing && Math.abs(o.x - px) < 1.2 && o.z < 1.5 && o.z > -1.5) {
+      playing = false;
+      document.getElementById('banner').style.display = 'block';
+    }
+    if (o.z < -8) obs.splice(oIdx, 1);
+  }
+
+  box3d(px, 0.6, 0, 1.4, 0.7, 2.0, '#00b4d8', '#90e0ef');
+  box3d(px, 1.0, -0.2, 0.7, 0.4, 1.0, '#ff0055', '#ff88aa');
+
+  document.getElementById('sc').textContent = Math.floor(score);
+  document.getElementById('am').textContent = ammo + '/3';
+
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
