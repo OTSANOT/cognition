@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D Coin Collector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      background: #0f172a;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    /* HUD & Score Display */
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .badge {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 12px 24px;
+      border-radius: 16px;
+      color: #f8fafc;
+      font-size: 20px;
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .coin-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      background: radial-gradient(circle at 30% 30%, #fef08a, #eab308);
+      border-radius: 50%;
+      box-shadow: 0 0 10px #eab308;
+    }
+    .hint {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+    .music-btn {
+      pointer-events: auto;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 12px 16px;
+      border-radius: 16px;
+      color: #f8fafc;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .music-btn:hover {
+      background: rgba(30, 41, 59, 0.9);
+      transform: translateY(-1px);
+    }
+    /* Start Overlay */
+    #overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 24px;
+      z-index: 20;
+      transition: opacity 0.3s ease;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 36px 28px;
+      border-radius: 24px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p {
+      color: #cbd5e1;
+      line-height: 1.6;
+      font-size: 15px;
+      margin: 0 0 24px;
+    }
+    button#startBtn {
+      width: 100%;
+      padding: 16px 28px;
+      font-size: 18px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button#startBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 24px rgba(37, 99, 235, 0.5);
+    }
+    button#startBtn:active {
+      transform: translateY(1px);
+    }
+    /* Timer Duration Selector */
+    .duration-selector {
+      margin-bottom: 22px;
+      text-align: left;
+    }
+    .duration-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+    .duration-value {
+      color: #38bdf8;
+      font-size: 16px;
+    }
+    input[type="range"]#durationSlider {
+      width: 100%;
+      accent-color: #0ea5e9;
+      cursor: pointer;
+      height: 6px;
+      border-radius: 8px;
+      background: #334155;
+    }
+    .duration-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    /* Mobile Touch Controls */
+    #touch-controls {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(2, 60px);
+      gap: 10px;
+      z-index: 15;
+    }
+    @media (pointer: coarse), (max-width: 768px) {
+      #touch-controls {
+        display: grid;
+      }
+      .hint {
+        display: none;
+      }
+    }
+    .dpad-btn {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      color: white;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+    .dpad-btn:active, .dpad-btn.active {
+      background: #0ea5e9;
+      transform: scale(0.94);
+    }
+    /* Math Challenge Modal */
+    #math-modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 30;
+    }
+    .math-equation {
+      font-size: 42px;
+      font-weight: 800;
+      color: #facc15;
+      margin: 16px 0 24px;
+      letter-spacing: 2px;
+      text-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
+    }
+    .math-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .math-btn {
+      padding: 16px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #f8fafc;
+      background: rgba(51, 65, 85, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .math-btn:hover {
+      background: #0ea5e9;
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+    .math-btn.wrong {
+      background: #ef4444;
+      border-color: #f87171;
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Heads-Up Display -->
+  <div id="ui">
+    <div class="badge">
+      <span class="coin-icon"></span>
+      <span>Score: <span id="score">0</span></span>
+    </div>
+    <div class="badge" id="timer-badge">
+      <span>⏱️ <span id="timer">02:00</span></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="badge hint">Drag screen to rotate camera</div>
+      <button id="musicToggle" class="music-btn" title="Toggle Canon in D Background Music" aria-label="Toggle Music">🎵 On</button>
+    </div>
+  </div>
+  
+  <!-- Start Screen Overlay -->
+  <div id="overlay">
+    <div class="card">
+      <h1 id="overlay-title">3D Coin Collector</h1>
+      <p id="overlay-desc">
+        Use <b>W A S D</b>, <b>Arrow Keys</b>, or the on-screen pad to roll the glowing cube.<br><br>
+        Collect spinning gold coins and solve single-digit math challenges before time runs out!
+      </p>
+      <div id="final-score" style="display: none; font-size: 26px; font-weight: 800; color: #facc15; margin-bottom: 6px;"></div>
+      <div id="final-accuracy" style="display: none; font-size: 18px; font-weight: 700; color: #38bdf8; margin-bottom: 20px;"></div>
+      <div class="duration-selector">
+        <div class="duration-header">
+          <span>Timer Length</span>
+          <span class="duration-value" id="durationLabel">2 mins</span>
+        </div>
+        <input type="range" id="durationSlider" min="1" max="10" value="2" step="1">
+        <div class="duration-ticks">
+          <span>1m</span>
+          <span>5m</span>
+          <span>10m</span>
+        </div>
+      </div>
+      <button id="startBtn">Play Game</button>
+    </div>
+  </div>
+
+  <!-- Arithmetic Challenge Modal -->
+  <div id="math-modal">
+    <div class="card">
+      <div style="font-size: 13px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px;">Coin Collected! Solve to Score</div>
+      <div id="math-equation" class="math-equation">4 + 5 = ?</div>
+      <div id="math-options" class="math-options"></div>
+      <div id="math-feedback" style="margin-top: 14px; font-size: 14px; font-weight: 600; color: #f87171; min-height: 20px;"></div>
+    </div>
+  </div>
+
+  <!-- On-Screen Touch D-Pad for Mobile/Tablets -->
+  <div id="touch-controls">
+    <div></div>
+    <button class="dpad-btn" data-key="w" aria-label="Up">▲</button>
+    <div></div>
+    <button class="dpad-btn" data-key="a" aria-label="Left">◀</button>
+    <button class="dpad-btn" data-key="s" aria-label="Down">▼</button>
+    <button class="dpad-btn" data-key="d" aria-label="Right">▶</button>
+  </div>
+
+  <!-- Load Three.js from reliable CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    window.onload = function () {
+      // 1. SETUP LUSH WEB AUDIO ENGINE & PACHELBEL'S "CANON IN D"
+      let audioCtx;
+      let masterGain;
+      let isMusicMuted = false;
+      let schedulerTimer = null;
+
+      // Pachelbel's Canon in D Major - Iconic Melody (in 8th-note steps)
+      const melodySequence = [
+        // Measure 1-4: Classic sustained descending half-notes
+        { freq: 739.99, dur: 4 }, // F#5 (over D)
+        { freq: 659.25, dur: 4 }, // E5  (over A)
+        { freq: 587.33, dur: 4 }, // D5  (over Bm)
+        { freq: 554.37, dur: 4 }, // C#5 (over F#m)
+        { freq: 493.88, dur: 4 }, // B4  (over G)
+        { freq: 440.00, dur: 4 }, // A4  (over D)
+        { freq: 493.88, dur: 4 }, // B4  (over G)
+        { freq: 554.37, dur: 4 }, // C#5 (over A)
+
+        // Measure 5-8: Quarter-note variation
+        { freq: 587.33, dur: 2 }, // D5
+        { freq: 739.99, dur: 2 }, // F#5
+        { freq: 880.00, dur: 2 }, // A5
+        { freq: 659.25, dur: 2 }, // E5
+        { freq: 587.33, dur: 2 }, // D5
+        { freq: 554.37, dur: 2 }, // C#5
+        { freq: 587.33, dur: 2 }, // D5
+        { freq: 493.88, dur: 2 }, // B4
+        { freq: 440.00, dur: 2 }, // A4
+        { freq: 392.00, dur: 2 }, // G4
+        { freq: 369.99, dur: 2 }, // F#4
+        { freq: 329.63, dur: 2 }, // E4
+        { freq: 293.66, dur: 2 }, // D4
+        { freq: 369.99, dur: 2 }, // F#4
+        { freq: 440.00, dur: 2 }, // A4
+        { freq: 493.88, dur: 2 }, // B4
+
+        // Measure 9-12: Flowing eighth-note variation
+        { freq: 739.99, dur: 1 }, // F#5
+        { freq: 659.25, dur: 1 }, // E5
+        { freq: 739.99, dur: 1 }, // F#5
+        { freq: 369.99, dur: 1 }, // F#4
+        { freq: 440.00, dur: 1 }, // A4
+        { freq: 659.25, dur: 1 }, // E5
+        { freq: 554.37, dur: 1 }, // C#5
+        { freq: 587.33, dur: 1 }, // D5
+        { freq: 493.88, dur: 1 }, // B4
+        { freq: 587.33, dur: 1 }, // D5
+        { freq: 554.37, dur: 1 }, // C#5
+        { freq: 440.00, dur: 1 }, // A4
+        { freq: 440.00, dur: 1 }, // A4
+        { freq: 493.88, dur: 1 }, // B4
+        { freq: 554.37, dur: 1 }, // C#5
+        { freq: 587.33, dur: 1 }, // D5
+        { freq: 493.88, dur: 1 }, // B4
+        { freq: 587.33, dur: 1 }, // D5
+        { freq: 554.37, dur: 1 }, // C#5
+        { freq: 493.88, dur: 1 }, // B4
+        { freq: 440.00, dur: 1 }, // A4
+        { freq: 392.00, dur: 1 }, // G4
+        { freq: 369.99, dur: 1 }, // F#4
+        { freq: 392.00, dur: 1 }, // G4
+        { freq: 440.00, dur: 1 }, // A4
+        { freq: 392.00, dur: 1 }, // G4
+        { freq: 369.99, dur: 1 }, // F#4
+        { freq: 329.63, dur: 1 }, // E4
+        { freq: 369.99, dur: 1 }, // F#4
+        { freq: 440.00, dur: 1 }, // A4
+        { freq: 493.88, dur: 1 }, // B4
+        { freq: 554.37, dur: 1 }  // C#5
+      ];
+
+      // Iconic 8-note ground bass Ostinato with warm inner chord harmonies
+      const bassSequence = [
+        { freq: 146.83, chord: [293.66, 369.99, 440.00], dur: 4 }, // D major
+        { freq: 110.00, chord: [277.18, 329.63, 440.00], dur: 4 }, // A major
+        { freq: 123.47, chord: [246.94, 293.66, 369.99], dur: 4 }, // B minor
+        { freq: 92.50,  chord: [277.18, 369.99, 440.00], dur: 4 }, // F# minor
+        { freq: 98.00,  chord: [246.94, 293.66, 392.00], dur: 4 }, // G major
+        { freq: 73.42,  chord: [220.00, 293.66, 369.99], dur: 4 }, // D major
+        { freq: 98.00,  chord: [246.94, 293.66, 392.00], dur: 4 }, // G major
+        { freq: 110.00, chord: [220.00, 277.18, 329.63], dur: 4 }  // A major
+      ];
+
+      // Build warm stereo hall reverb & master bus once
+      function initAudioBus() {
+        if (masterGain) return;
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(isMusicMuted ? 0 : 0.85, audioCtx.currentTime);
+
+        // Synthetic concert hall impulse response for lush string resonance
+        const sampleRate = audioCtx.sampleRate;
+        const length = sampleRate * 1.8;
+        const impulse = audioCtx.createBuffer(2, length, sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+          const data = impulse.getChannelData(ch);
+          for (let i = 0; i < length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.6);
+          }
+        }
+        const convolver = audioCtx.createConvolver();
+        convolver.buffer = impulse;
+
+        const reverbWet = audioCtx.createGain();
+        reverbWet.gain.setValueAtTime(0.32, audioCtx.currentTime);
+
+        const dryGain = audioCtx.createGain();
+        dryGain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+
+        masterGain.connect(dryGain);
+        masterGain.connect(convolver);
+        convolver.connect(reverbWet);
+
+        dryGain.connect(audioCtx.destination);
+        reverbWet.connect(audioCtx.destination);
+      }
+
+      // Expressive ensemble string voice (detuned oscillators + warm low-pass filter + legato release)
+      function playEnsembleString(freq, startTime, durationSec, volume, cutoffHz = 1600, isBass = false) {
+        if (!audioCtx || !masterGain) return;
+        try {
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(cutoffHz * 0.65, startTime);
+          filter.frequency.linearRampToValueAtTime(cutoffHz, startTime + Math.min(0.25, durationSec * 0.4));
+          filter.frequency.exponentialRampToValueAtTime(cutoffHz * 0.5, startTime + durationSec + 0.18);
+          filter.Q.setValueAtTime(0.8, startTime);
+
+          const env = audioCtx.createGain();
+          const attack = isBass ? 0.12 : 0.08;
+          const release = 0.22; // Slight overlap for smooth legato phrasing
+          env.gain.setValueAtTime(0.0001, startTime);
+          env.gain.linearRampToValueAtTime(volume, startTime + attack);
+          env.gain.setValueAtTime(volume * 0.88, startTime + Math.max(attack, durationSec - 0.04));
+          env.gain.exponentialRampToValueAtTime(0.0001, startTime + durationSec + release);
+
+          filter.connect(env);
+          env.connect(masterGain);
+
+          // Dual slightly detuned oscillators create natural string chorus warmth
+          const detunes = isBass ? [0] : [-5, 5];
+          detunes.forEach((cents) => {
+            const osc = audioCtx.createOscillator();
+            osc.type = isBass ? 'triangle' : 'sawtooth';
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc.detune.setValueAtTime(cents, startTime);
+            osc.connect(filter);
+            osc.start(startTime);
+            osc.stop(startTime + durationSec + release + 0.05);
+          });
+        } catch (e) {
+          // Ignore audio context edge cases
+        }
+      }
+
+      // Sample-accurate Web Audio lookahead scheduler (eliminates rhythm jitter)
+      function startBackgroundMusic() {
+        if (schedulerTimer) clearInterval(schedulerTimer);
+        initAudioBus();
+
+        const eighthStepSec = 0.29; // Gentle ~103 BPM Baroque tempo
+        let nextStepTime = audioCtx.currentTime + 0.08;
+        let melodyIdx = 0;
+        let melodyTick = 0;
+        let bassIdx = 0;
+        let bassTick = 0;
+
+        schedulerTimer = setInterval(() => {
+          if (!audioCtx) return;
+
+          // Schedule notes 0.25s ahead on the hardware audio clock
+          while (nextStepTime < audioCtx.currentTime + 0.25) {
+            if (melodyTick <= 0) {
+              const note = melodySequence[melodyIdx];
+              const noteDur = note.dur * eighthStepSec;
+              playEnsembleString(note.freq, nextStepTime, noteDur, 0.055, 1950, false);
+              melodyTick = note.dur;
+              melodyIdx = (melodyIdx + 1) % melodySequence.length;
+            }
+            melodyTick--;
+
+            if (bassTick <= 0) {
+              const bass = bassSequence[bassIdx];
+              const bassDur = bass.dur * eighthStepSec;
+              // Warm cello/contrabass root
+              playEnsembleString(bass.freq, nextStepTime, bassDur, 0.14, 520, true);
+              // Soft inner string pad chord for harmonic richness
+              bass.chord.forEach((chordFreq) => {
+                playEnsembleString(chordFreq, nextStepTime, bassDur, 0.018, 950, false);
+              });
+              bassTick = bass.dur;
+              bassIdx = (bassIdx + 1) % bassSequence.length;
+            }
+            bassTick--;
+
+            nextStepTime += eighthStepSec;
+          }
+        }, 60);
+      }
+
+      document.getElementById('musicToggle').addEventListener('click', (e) => {
+        isMusicMuted = !isMusicMuted;
+        e.target.innerText = isMusicMuted ? '🔇 Off' : '🎵 On';
+        if (masterGain && audioCtx) {
+          masterGain.gain.setTargetAtTime(isMusicMuted ? 0 : 0.85, audioCtx.currentTime, 0.05);
+        }
+      });
+
+      function playSound(type) {
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          if (type === 'coin') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+            osc.frequency.exponentialRampToValueAtTime(1174.66, audioCtx.currentTime + 0.12); // D6
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+          } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+          }
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+        } catch (e) {
+          console.warn('Audio playback skipped:', e);
+        }
+      }
+
+      // 2. SETUP 3D SCENE, CAMERA, AND RENDERER
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0f172a);
+      scene.fog = new THREE.FogExp2(0x0f172a, 0.022);
+
+      const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+      let cameraAngle = 0;
+      const cameraRadius = 19;
+      const cameraHeight = 13;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      document.body.appendChild(renderer.domElement);
+
+      // 3. ADD LIGHTING
+      const ambientLight = new THREE.AmbientLight(0x94a3b8, 0.6);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      dirLight.position.set(8, 16, 10);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      dirLight.shadow.camera.near = 0.5;
+      dirLight.shadow.camera.far = 40;
+      const d = 12;
+      dirLight.shadow.camera.left = -d;
+      dirLight.shadow.camera.right = d;
+      dirLight.shadow.camera.top = d;
+      dirLight.shadow.camera.bottom = -d;
+      scene.add(dirLight);
+
+      // 4. CREATE ARENA FLOOR, GRID, WALLS, PLAYER, AND COIN
+      const arenaSize = 20;
+      const floor = new THREE.Mesh(
+        new THREE.BoxGeometry(arenaSize, 0.5, arenaSize),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 })
+      );
+      floor.position.y = -0.25;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      const gridHelper = new THREE.GridHelper(arenaSize, 20, 0x38bdf8, 0x334155);
+      gridHelper.position.y = 0.01;
+      scene.add(gridHelper);
+
+      // Player Cube
+      const player = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshStandardMaterial({
+          color: 0x38bdf8,
+          emissive: 0x0284c7,
+          emissiveIntensity: 0.35,
+          roughness: 0.2
+        })
+      );
+      player.position.y = 0.5;
+      player.castShadow = true;
+      scene.add(player);
+
+      // Gold Coin
+      const coin = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.55, 0.55, 0.18, 24),
+        new THREE.MeshStandardMaterial({
+          color: 0xfacc15,
+          emissive: 0xca8a04,
+          emissiveIntensity: 0.4,
+          metalness: 0.7,
+          roughness: 0.2
+        })
+      );
+      coin.rotation.x = Math.PI / 2;
+      coin.position.set(3, 0.75, -3);
+      coin.castShadow = true;
+      scene.add(coin);
+
+      // Subtle PointLight attached to coin for glow effect
+      const coinLight = new THREE.PointLight(0xfacc15, 1, 5);
+      coin.add(coinLight);
+
+      // 5. CONTROLS, CAMERA ORBIT, AND RESPONSIVE RESIZE
+      let score = 0;
+      let totalAttempts = 0;
+      let correctAttempts = 0;
+      let selectedMinutes = 2;
+      let timeLeft = selectedMinutes * 60;
+      let timerInterval = null;
+      let gameStarted = false;
+      let isMathPaused = false;
+      let currentAnswer = null;
+      const keys = {};
+
+      const durationSlider = document.getElementById('durationSlider');
+      const durationLabel = document.getElementById('durationLabel');
+      durationSlider.addEventListener('input', (e) => {
+        selectedMinutes = parseInt(e.target.value, 10);
+        durationLabel.innerText = `${selectedMinutes} min${selectedMinutes > 1 ? 's' : ''}`;
+        timeLeft = selectedMinutes * 60;
+        updateTimerDisplay();
+      });
+
+      function updateTimerDisplay() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        document.getElementById('timer').innerText =
+          `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        const timerBadge = document.getElementById('timer-badge');
+        timerBadge.style.color = timeLeft <= 15 ? '#f87171' : '#f8fafc';
+      }
+
+      function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (!gameStarted) return;
+          timeLeft--;
+          updateTimerDisplay();
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      function endGame() {
+        gameStarted = false;
+        isMathPaused = false;
+        clearInterval(timerInterval);
+        Object.keys(keys).forEach(k => keys[k] = false);
+        document.getElementById('math-modal').style.display = 'none';
+
+        document.getElementById('overlay-title').innerText = "Time's Up!";
+        document.getElementById('overlay-desc').innerText = "Great job solving those math challenges!";
+        const finalScoreEl = document.getElementById('final-score');
+        finalScoreEl.innerText = `Final Score: ${score}`;
+        finalScoreEl.style.display = 'block';
+
+        const accuracyPct = totalAttempts > 0
+          ? Math.round((correctAttempts / totalAttempts) * 100)
+          : 0;
+        const finalAccuracyEl = document.getElementById('final-accuracy');
+        finalAccuracyEl.innerText = `Calculation Accuracy: ${accuracyPct}% (${correctAttempts}/${totalAttempts})`;
+        finalAccuracyEl.style.display = 'block';
+
+        document.getElementById('startBtn').innerText = 'Play Again';
+
+        const overlay = document.getElementById('overlay');
+        overlay.style.display = 'flex';
+        requestAnimationFrame(() => {
+          overlay.style.opacity = '1';
+        });
+      }
+
+      // Single-Digit Arithmetic Challenge Generator (+, -, ×, ÷)
+      function triggerMathChallenge() {
+        isMathPaused = true;
+        // Clear held movement keys so cube stops cleanly
+        Object.keys(keys).forEach(k => keys[k] = false);
+
+        const ops = ['+', '-', '×', '÷'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let a, b, ans;
+
+        if (op === '+') {
+          a = Math.floor(Math.random() * 9) + 1;
+          b = Math.floor(Math.random() * 9) + 1;
+          ans = a + b;
+        } else if (op === '-') {
+          a = Math.floor(Math.random() * 9) + 1;
+          b = Math.floor(Math.random() * a) + 1; // Ensure non-negative result
+          ans = a - b;
+        } else if (op === '×') {
+          a = Math.floor(Math.random() * 9) + 1;
+          b = Math.floor(Math.random() * 9) + 1;
+          ans = a * b;
+        } else {
+          // Exact single-digit division
+          b = Math.floor(Math.random() * 9) + 1;
+          ans = Math.floor(Math.random() * 9) + 1;
+          a = b * ans;
+        }
+
+        currentAnswer = ans;
+        document.getElementById('math-equation').innerText = `${a} ${op} ${b} = ?`;
+        document.getElementById('math-feedback').innerText = '';
+
+        // Generate 4 unique multiple-choice options
+        const options = new Set([ans]);
+        while (options.size < 4) {
+          const offset = Math.floor(Math.random() * 9) - 4;
+          const candidate = ans + offset;
+          if (candidate >= 0 && candidate !== ans) {
+            options.add(candidate);
+          }
+        }
+
+        const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
+        const optionsContainer = document.getElementById('math-options');
+        optionsContainer.innerHTML = '';
+
+        shuffled.forEach((val) => {
+          const btn = document.createElement('button');
+          btn.className = 'math-btn';
+          btn.innerText = val;
+          btn.addEventListener('click', () => checkMathAnswer(val, btn));
+          optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('math-modal').style.display = 'flex';
+      }
+
+      function checkMathAnswer(selected, btnElement) {
+        if (!isMathPaused) return;
+        totalAttempts++;
+        if (selected === currentAnswer) {
+          correctAttempts++;
+          score++;
+          document.getElementById('score').innerText = score;
+          playSound('coin');
+          document.getElementById('math-modal').style.display = 'none';
+          isMathPaused = false;
+          respawnCoin();
+        } else {
+          playSound('wrong');
+          document.getElementById('math-feedback').innerText = 'Not quite! Try again.';
+          if (btnElement) {
+            btnElement.classList.remove('wrong');
+            void btnElement.offsetWidth; // Restart shake animation
+            btnElement.classList.add('wrong');
+          }
+        }
+      }
+
+      function respawnCoin() {
+        let newX, newZ;
+        do {
+          newX = (Math.random() - 0.5) * (arenaSize - 3);
+          newZ = (Math.random() - 0.5) * (arenaSize - 3);
+        } while (Math.hypot(newX - player.position.x, newZ - player.position.z) < 3);
+
+        coin.position.x = newX;
+        coin.position.z = newZ;
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (isMathPaused) return;
+        keys[e.key.toLowerCase()] = true;
+      });
+      window.addEventListener('keyup', (e) => {
+        keys[e.key.toLowerCase()] = false;
+      });
+
+      // Touch D-Pad bindings
+      document.querySelectorAll('.dpad-btn').forEach((btn) => {
+        const key = btn.getAttribute('data-key');
+        const press = (e) => {
+          e.preventDefault();
+          keys[key] = true;
+          btn.classList.add('active');
+        };
+        const release = (e) => {
+          e.preventDefault();
+          keys[key] = false;
+          btn.classList.remove('active');
+        };
+        btn.addEventListener('touchstart', press, { passive: false });
+        btn.addEventListener('touchend', release);
+        btn.addEventListener('mousedown', press);
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', release);
+      });
+
+      // Mouse & Touch Camera Orbit
+      let isDragging = false;
+      let previousX = 0;
+
+      renderer.domElement.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        previousX = e.clientX;
+      });
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - previousX;
+        cameraAngle -= deltaX * 0.008;
+        previousX = e.clientX;
+      });
+
+      renderer.domElement.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          previousX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+      window.addEventListener('touchend', () => {
+        isDragging = false;
+      });
+      window.addEventListener('touchmove', (e) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        const deltaX = e.touches[0].clientX - previousX;
+        cameraAngle -= deltaX * 0.008;
+        previousX = e.touches[0].clientX;
+      }, { passive: true });
+
+      // Window Resize Handler
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Start Button
+      document.getElementById('startBtn').addEventListener('click', () => {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        startBackgroundMusic();
+
+        // Reset game state
+        score = 0;
+        totalAttempts = 0;
+        correctAttempts = 0;
+        selectedMinutes = parseInt(durationSlider.value, 10);
+        timeLeft = selectedMinutes * 60;
+        isMathPaused = false;
+        document.getElementById('score').innerText = score;
+        document.getElementById('final-score').style.display = 'none';
+        document.getElementById('final-accuracy').style.display = 'none';
+        updateTimerDisplay();
+        player.position.set(0, 0.5, 0);
+        cameraAngle = 0;
+        respawnCoin();
+
+        const overlay = document.getElementById('overlay');
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 300);
+        gameStarted = true;
+        startTimer();
+      });
+
+      // 6. MAIN ANIMATION & GAME LOOP
+      const clock = new THREE.Clock();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const elapsedTime = clock.getElapsedTime();
+
+        // Update Camera Orbit Position
+        camera.position.x = player.position.x + Math.sin(cameraAngle) * cameraRadius;
+        camera.position.z = player.position.z + Math.cos(cameraAngle) * cameraRadius;
+        camera.position.y = cameraHeight;
+        camera.lookAt(player.position.x, 0.5, player.position.z);
+
+        // Animate Coin Spin & Bobbing
+        coin.rotation.z += 0.05;
+        coin.position.y = 0.75 + Math.sin(elapsedTime * 4) * 0.15;
+
+        if (gameStarted && !isMathPaused) {
+          const speed = 0.16;
+          let moveForward = 0;
+          let moveRight = 0;
+
+          if (keys['w'] || keys['arrowup']) moveForward += 1;
+          if (keys['s'] || keys['arrowdown']) moveForward -= 1;
+          if (keys['d'] || keys['arrowright']) moveRight += 1;
+          if (keys['a'] || keys['arrowleft']) moveRight -= 1;
+
+          // Move relative to current camera angle
+          if (moveForward !== 0 || moveRight !== 0) {
+            const forwardX = -Math.sin(cameraAngle);
+            const forwardZ = -Math.cos(cameraAngle);
+            const rightX = Math.cos(cameraAngle);
+            const rightZ = -Math.sin(cameraAngle);
+
+            let dx = forwardX * moveForward + rightX * moveRight;
+            let dz = forwardZ * moveForward + rightZ * moveRight;
+            const length = Math.hypot(dx, dz);
+            dx = (dx / length) * speed;
+            dz = (dz / length) * speed;
+
+            player.position.x += dx;
+            player.position.z += dz;
+
+            // Keep player inside arena bounds (-9.2 to 9.2)
+            const limit = arenaSize / 2 - 0.6;
+            player.position.x = Math.max(-limit, Math.min(limit, player.position.x));
+            player.position.z = Math.max(-limit, Math.min(limit, player.position.z));
+          }
+
+          // Check Coin Collection
+          const dist = Math.hypot(
+            player.position.x - coin.position.x,
+            player.position.z - coin.position.z
+          );
+          if (dist < 1.15) {
+            playSound('coin');
+            triggerMathChallenge();
+          }
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    };
+  </script>
+</body>
+</html>
