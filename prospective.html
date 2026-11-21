@@ -1,755 +1,200 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>職業治療認知訓練：定向力及前瞻性記憶</title>
-  <style>
-    :root {
-      --bg: #f0f4f8;
-      --card: #ffffff;
-      --primary: #2b6cb0;
-      --accent: #dd6b20;
-      --success: #2f855a;
-      --text: #1a202c;
-      --border: #cbd5e0;
-    }
-    * {
-      box-sizing: border-box;
-    }
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100vh;
-      overflow-x: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang HK", "Microsoft JhengHei", "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 16px;
-    }
-    .container {
-      width: 100%;
-      max-width: 720px;
-      background: var(--card);
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      padding: 24px 20px;
-      margin: 0 auto;
-    }
-    h1 {
-      margin: 0 0 12px;
-      font-size: 24px;
-      line-height: 1.35;
-      color: var(--primary);
-    }
-    h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: #9c4221;
-    }
-    p {
-      margin: 0 0 16px;
-      line-height: 1.6;
-      font-size: 16px;
-    }
-    .hidden {
-      display: none !important;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>職業治療認知訓練：定向力及前瞻性記憶</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f7f6; color: #333; max-width: 750px; margin: 20px auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #fff; }
+        h1 { color: #2c6e49; text-align: center; font-size: 1.6em; }
+        h2 { color: #4c956c; border-bottom: 2px solid #d8f3dc; padding-bottom: 5px; font-size: 1.3em; }
+        .section { margin-bottom: 25px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        select, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+        button { background-color: #2c6e49; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; margin-top: 15px; }
+        button:hover { background-color: #1b4332; }
+        .hidden { display: none !important; }
+        .clock { font-size: 2.2em; font-weight: bold; text-align: center; background: #222; color: #00ff88; padding: 10px; border-radius: 8px; margin: 15px 0; letter-spacing: 2px; }
+        .item-box { text-align: center; font-size: 1.8em; padding: 25px; background: #fff3cd; border: 2px dashed #ffc107; border-radius: 10px; margin: 15px 0; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-fridge { background-color: #0077b6; }
+        .btn-fridge:hover { background-color: #023e8a; }
+        .btn-cabinet { background-color: #d97706; }
+        .btn-cabinet:hover { background-color: #b45309; }
+        .pm-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-med { background-color: #d00000; }
+        .btn-kettle { background-color: #6a040f; }
+        .boil-alert { background-color: #ffccd5; color: #800f2f; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.2em; animation: pulse 1s infinite; margin-bottom: 10px; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        
+        /* 干擾選項樣式 */
+        .distraction-box { background: #fff8e7; border: 1px solid #f59e0b; padding: 12px 15px; border-radius: 8px; margin-top: 15px; }
+        .checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.05em; margin-top: 0; }
+        .checkbox-label input { width: 20px; height: 20px; cursor: pointer; }
 
-    /* Buttons */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 13px 20px;
-      font-size: 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      min-height: 48px;
-      transition: opacity 0.15s ease, transform 0.1s ease;
-      text-align: center;
-    }
-    .btn:hover {
-      opacity: 0.92;
-    }
-    .btn:active {
-      transform: scale(0.98);
-    }
-    .btn-block {
-      width: 100%;
-      margin-top: 8px;
-    }
-    .btn-action {
-      background: var(--accent);
-      font-size: 17px;
-      padding: 14px 20px;
-      flex: 1 1 220px;
-    }
-    .btn-success {
-      background: var(--success);
-    }
-
-    /* Orientation Grid & Form Controls */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    @media (min-width: 560px) {
-      .form-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .container {
-        padding: 30px;
-      }
-    }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-    label {
-      font-weight: 700;
-      margin-bottom: 6px;
-      font-size: 15px;
-      color: #2d3748;
-    }
-    select {
-      width: 100%;
-      height: 46px;
-      padding: 0 12px;
-      font-size: 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      background-color: #ffffff;
-      color: var(--text);
-      appearance: auto;
-    }
-    select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
-    }
-    .feedback-text {
-      color: #c53030;
-      font-weight: 700;
-      margin-top: 12px;
-      margin-bottom: 0;
-      min-height: 24px;
-      line-height: 1.5;
-    }
-
-    /* Briefing Card */
-    .time-badge {
-      display: inline-block;
-      background: #ebf8ff;
-      color: #2b6cb0;
-      border: 1px solid #90cdf4;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 15px;
-      margin-bottom: 12px;
-    }
-    .task-card {
-      background: #fffaf0;
-      border: 2px dashed #ed8936;
-      padding: 18px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-    .task-card ul {
-      margin: 0 0 12px;
-      padding-left: 20px;
-      line-height: 1.65;
-    }
-    .task-card li {
-      margin-bottom: 10px;
-    }
-
-    /* Game HUD */
-    .hud {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      background: #edf2f7;
-      padding: 14px 18px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-      border-left: 6px solid var(--primary);
-    }
-    .hud-info {
-      font-size: 15px;
-      line-height: 1.5;
-    }
-    .clock {
-      font-size: 26px;
-      font-weight: 800;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color: #2d3748;
-      background: #ffffff;
-      padding: 6px 14px;
-      border-radius: 8px;
-      border: 1px solid #cbd5e0;
-      white-space: nowrap;
-    }
-
-    /* Kettle Alert */
-    .kettle-alert {
-      background: #fed7d7;
-      color: #9b2c2c;
-      border: 1px solid #feb2b2;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 16px;
-      animation: pulse 1s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.65; }
-    }
-
-    /* Ongoing Sorting Area */
-    .sorting-area {
-      text-align: center;
-      padding: 22px 16px;
-      background: #ebf8ff;
-      border: 1px solid #bee3f8;
-      border-radius: 12px;
-      margin-bottom: 18px;
-    }
-    .sorting-subtitle {
-      font-size: 14px;
-      font-weight: 600;
-      color: #2c5282;
-    }
-    .item-display {
-      font-size: 30px;
-      font-weight: 800;
-      margin: 16px 0;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .sort-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .sort-buttons .btn {
-      flex: 1 1 150px;
-      max-width: 220px;
-    }
-    .sort-feedback {
-      margin-top: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      min-height: 20px;
-    }
-
-    /* Prospective Memory Action Controls */
-    .pm-section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #4a5568;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .pm-controls {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding-top: 14px;
-      border-top: 2px solid #e2e8f0;
-    }
-    .pm-toast {
-      text-align: center;
-      font-size: 14px;
-      font-weight: 700;
-      color: #2b6cb0;
-      margin-top: 12px;
-      min-height: 20px;
-    }
-
-    /* Results Box */
-    .results-box {
-      background: #f0fff4;
-      border: 1px solid #9ae6b4;
-      padding: 18px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-    }
-    .metric-card {
-      background: #ffffff;
-      border: 1px solid #c6f6d5;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      line-height: 1.55;
-    }
-    .metric-card:last-child {
-      margin-bottom: 0;
-    }
-  </style>
+        /* 電話干擾彈出視窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: #fff; padding: 25px; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 8px 25px rgba(0,0,0,0.3); text-align: center; border-top: 6px solid #f59e0b; }
+        .modal-card h3 { color: #b45309; margin-top: 0; font-size: 1.4em; }
+        .modal-options button { background-color: #f3f4f6; color: #1f2937; border: 1px solid #d1d5db; margin-top: 8px; text-align: left; padding: 12px 15px; }
+        .modal-options button:hover { background-color: #fef3c7; border-color: #f59e0b; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <!-- PHASE 1: ORIENTATION CHECK -->
-  <div id="phase-orientation">
-    <h1>第一步：每日現實定向力測試</h1>
-    <p>喺開始朝早廚房日常練習之前，請先確認今日嘅現實時間同地點：</p>
+    <h1>職業治療認知訓練：定向力及前瞻性記憶</h1>
 
-    <div class="form-grid">
-      <div class="form-group">
-        <label for="ori-month">而家係幾多月份？</label>
-        <select id="ori-month">
-          <option value="">-- 請選擇月份 --</option>
-          <option value="0">一月</option>
-          <option value="1">二月</option>
-          <option value="2">三月</option>
-          <option value="3">四月</option>
-          <option value="4">五月</option>
-          <option value="5">六月</option>
-          <option value="6">七月</option>
-          <option value="7">八月</option>
-          <option value="8">九月</option>
-          <option value="9">十月</option>
-          <option value="10">十一月</option>
-          <option value="11">十二月</option>
+    <!-- 第一步：現實定向力 -->
+    <div id="step1" class="section">
+        <h2>第一步：每日現實定向力測試</h2>
+        <p>喺開始朝早廚房日常練習之前，請先確認今日嘅現實時間同地點：</p>
+        <label>而家係幾多月份？</label>
+        <select id="monthSelect">
+            <option value="">-- 請選擇月份 --</option>
+            <option value="1">一月</option><option value="2">二月</option><option value="3">三月</option>
+            <option value="4">四月</option><option value="5">五月</option><option value="6">六月</option>
+            <option value="7">七月</option><option value="8">八月</option><option value="9">九月</option>
+            <option value="10">十月</option><option value="11">十一月</option><option value="12">十二月</option>
         </select>
-      </div>
 
-      <div class="form-group">
-        <label for="ori-date">今日係幾多號？</label>
-        <select id="ori-date">
-          <option value="">-- 請選擇日期 --</option>
+        <label>今日係幾多號？</label>
+        <select id="daySelect"><option value="">-- 請選擇日期 --</option></select>
+
+        <label>今日係星期幾？</label>
+        <select id="weekdaySelect">
+            <option value="">-- 請選擇星期 --</option>
+            <option value="0">星期日</option><option value="1">星期一</option><option value="2">星期二</option>
+            <option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option>
+            <option value="6">星期六</option>
         </select>
-      </div>
 
-      <div class="form-group">
-        <label for="ori-day">今日係星期幾？</label>
-        <select id="ori-day">
-          <option value="">-- 請選擇星期 --</option>
-          <option value="Sunday">星期日</option>
-          <option value="Monday">星期一</option>
-          <option value="Tuesday">星期二</option>
-          <option value="Wednesday">星期三</option>
-          <option value="Thursday">星期四</option>
-          <option value="Friday">星期五</option>
-          <option value="Saturday">星期六</option>
+        <label>你而家身處喺邊度？（地點定向力）</label>
+        <select id="locationSelect">
+            <option value="">-- 請選擇地點 --</option>
+            <option value="home">屋企 / 治療室</option>
+            <option value="airport">國際機場</option>
+            <option value="supermarket">超級市場入面</option>
         </select>
-      </div>
 
-      <div class="form-group">
-        <label for="ori-place">你而家身處喺邊度？</label>
-        <select id="ori-place">
-          <option value="">-- 請選擇地點 --</option>
-          <option value="Home / Clinic">屋企 / 治療室</option>
-          <option value="Airport">國際機場</option>
-          <option value="Supermarket">超級市場入面</option>
-        </select>
-      </div>
+        <button onclick="checkOrientation()">確認定向力並睇練習指示</button>
     </div>
 
-    <button class="btn btn-block" onclick="checkOrientation()">確認定向力並睇練習指示</button>
-    <p id="ori-feedback" class="feedback-text"></p>
-  </div>
+    <!-- 第二步：任務指示 -->
+    <div id="step2" class="section hidden">
+        <h2>第二步：朝早日常任務指示</h2>
+        <p>🎲 隨機練習時段：<strong id="startTimeDisplay">08:00 AM</strong> 開始</p>
+        <p>假設而家係朝早 <strong id="startTimeText">08:00 AM</strong>，你喺廚房入面。除咗要執好買返嚟嘅餸同日用品之外，仲有<strong>兩項前瞻性記憶任務</strong>要記住：</p>
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2c6e49;">
+            <h3>🧠 請記實以下兩項前瞻性記憶任務：</h3>
+            <ul>
+                <li><strong>任務一（時間性前瞻記憶）：</strong> 當廚房個鐘去到 <strong id="targetTimeDisplay">08:15 AM</strong>（<span id="targetWindowDisplay">08:15 AM 至 08:18 AM</span> 之間），請撳<em>「💊 食朝早藥」</em>。</li>
+                <li><strong>任務二（事件性前瞻記憶）：</strong> 你喺爐頭煲緊水。當聽到水煲響或者見到<strong>水滾提示</strong>嗰陣，請撳<em>「🫖 熄火（水煲）」</em>。</li>
+            </ul>
+        </div>
 
-  <!-- PHASE 2: PROSPECTIVE MEMORY BRIEFING -->
-  <div id="phase-briefing" class="hidden">
-    <h1>第二步：朝早日常任務指示</h1>
-    <div class="time-badge">🎲 隨機練習時段：<span id="briefing-badge-time">08:00 AM</span> 開始</div>
-    <p>假設而家係朝早 <strong id="briefing-start-time">08:00 AM</strong>，你喺廚房入面。除咗要執好買返嚟嘅餸同日用品之外，仲有<strong>兩項前瞻性記憶任務</strong>要記住：</p>
+        <!-- 干擾任務設定區 -->
+        <div class="distraction-box">
+            <label class="checkbox-label">
+                <input type="checkbox" id="enableDistraction">
+                <span>📞 <strong>加入突發干擾任務（進階訓練）</strong></span>
+            </label>
+            <p style="margin: 6px 0 0 30px; font-size: 0.92em; color: #555;">
+                勾選後，練習期間會隨機收到屋企人或診所嘅來電，需先回答問題先可以繼續執拾（時鐘仍會繼續走動）。
+            </p>
+        </div>
 
-    <div class="task-card">
-      <h3>🧠 請記實以下兩項前瞻性記憶任務：</h3>
-      <ul>
-        <li><strong>任務一（時間性前瞻記憶）：</strong> 當廚房個鐘去到 <strong id="briefing-med-time">08:15 AM</strong>（<span id="briefing-med-window">08:15 AM 至 08:18 AM</span> 之間），請撳<em>「💊 食朝早藥」</em>。</li>
-        <li><strong>任務二（事件性前瞻記憶）：</strong> 你喺爐頭煲緊水。當聽到水煲響或者見到<strong>水滾提示</strong>嗰陣，請撳<em>「🫖 熄火（水煲）」</em>。</li>
-      </ul>
-      <p style="margin-bottom: 0;"><em>提示：一撳「開始」，呢個提示框就會收埋，你要靠自己記憶力去完成呢兩項任務！</em></p>
+        <p><em>提示：一撳「開始」，呢個提示框就會收埋，你要靠自己記憶力去完成呢兩項任務！</em></p>
+        <button onclick="startKitchenTask()">開始廚房練習（同時開啟音效）</button>
     </div>
 
-    <button class="btn btn-success btn-block" onclick="startGame()">開始廚房練習（同時開啟音效）</button>
-  </div>
+    <!-- 第三步：廚房練習介面 -->
+    <div id="step3" class="section hidden">
+        <div style="display: flex; justify-content: space-between;">
+            <span><strong>地點：</strong> 屋企廚房</span>
+            <span><strong>已執好物品：</strong> <span id="sortedCount">0</span> 件</span>
+        </div>
+        <div class="clock" id="simClock">08:00 AM</div>
+        <div id="boilAlert" class="boil-alert hidden">♨ 蒸氣同水煲聲：水滾啦！</div>
 
-  <!-- PHASE 3: ACTIVE DUAL-TASK TRAINING -->
-  <div id="phase-game" class="hidden">
-    <div class="hud">
-      <div class="hud-info">
-        <strong>地點：</strong> 屋企廚房<br>
-        <strong>已執好物品：</strong> <span id="sort-score">0</span> 件
-      </div>
-      <div class="clock" id="sim-clock">08:00 AM</div>
+        <p style="text-align: center; font-weight: bold;">日常家務：將買返嚟嘅食物雜貨放去啱嘅位置</p>
+        <div class="item-box" id="currentItem">🥛 新鮮牛奶</div>
+        <div class="btn-group">
+            <button class="btn-fridge" onclick="sortItem('fridge')">❄ 放入雪櫃</button>
+            <button class="btn-cabinet" onclick="sortItem('cabinet')">🗄 放入廚櫃</button>
+        </div>
+
+        <hr style="margin: 20px 0;">
+        <p style="text-align: center; font-weight: bold;">前瞻性記憶任務操作（記住時間同留意水滾聲）：</p>
+        <div class="pm-group">
+            <button class="btn-med" onclick="takeMedicine()">💊 食朝早藥</button>
+            <button class="btn-kettle" onclick="turnOffKettle()">🫖 熄火（水煲）</button>
+        </div>
     </div>
 
-    <div id="kettle-banner" class="kettle-alert hidden">
-      ♨️ 蒸氣同水煲聲：水滾啦！
+    <!-- 第四步：表現總結 -->
+    <div id="step4" class="section hidden">
+        <h2>練習表現評估總結</h2>
+        <div id="summaryContent" style="line-height: 1.8; font-size: 1.1em;"></div>
+        <button onclick="location.reload()">重新開始練習（隨機新時間）</button>
     </div>
 
-    <!-- Ongoing Distractor Task -->
-    <div class="sorting-area">
-      <div class="sorting-subtitle">日常家務：將買返嚟嘅食物雜貨放去啱嘅位置</div>
-      <div class="item-display" id="current-item">🥛 新鮮牛奶</div>
-      <div class="sort-buttons">
-        <button class="btn" onclick="sortItem('fridge')">❄️ 放入雪櫃</button>
-        <button class="btn" onclick="sortItem('pantry')">🗄️ 放入廚櫃</button>
-      </div>
-      <div id="sort-feedback" class="sort-feedback"></div>
+    <!-- 突發電話干擾視窗 -->
+    <div id="distractionModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 id="callTitle">📞 屋企電話響緊...</h3>
+            <p id="callQuestion" style="font-size: 1.1em; line-height: 1.5; margin: 15px 0;"></p>
+            <div class="modal-options" id="callOptions"></div>
+        </div>
     </div>
-
-    <!-- Prospective Memory Action Controls -->
-    <div class="pm-section-title">前瞻性記憶任務操作（記住食藥時間同留意水滾聲）：</div>
-    <div class="pm-controls">
-      <button class="btn btn-action" id="btn-meds" onclick="triggerMeds()">💊 食朝早藥</button>
-      <button class="btn btn-action" id="btn-kettle" onclick="triggerKettle()">🫖 熄火（水煲）</button>
-    </div>
-    <div id="pm-toast" class="pm-toast"></div>
-  </div>
-
-  <!-- PHASE 4: OT CLINICAL SUMMARY -->
-  <div id="phase-results" class="hidden">
-    <h1>練習表現評估總結</h1>
-    <div class="results-box" id="results-content"></div>
-    <button class="btn btn-block" onclick="resetSession()">重新開始練習（隨機新時間）</button>
-  </div>
-</div>
 
 <script>
-  // Audio Synthesizer for Kettle Whistle & Feedback
-  let audioCtx;
-  function playTone(freq, duration, type = 'sine') {
-    if (!audioCtx) return;
-    try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    } catch (e) {
-      // Ignore audio edge cases
-    }
-  }
-
-  function playKettleWhistle() {
-    playTone(1760, 0.45, 'sine');
-    setTimeout(() => playTone(1975.5, 0.55, 'sine'), 220);
-  }
-
-  // Populate 1-31 date options on load
-  (function populateDates() {
-    const dateSelect = document.getElementById('ori-date');
-    for (let d = 1; d <= 31; d++) {
-      const opt = document.createElement('option');
-      opt.value = d.toString();
-      opt.innerText = `${d} 號`;
-      dateSelect.appendChild(opt);
-    }
-  })();
-
-  // Phase 1: Real-time Orientation Validation
-  let orientationAttempts = 0;
-  let startHour = 8; // Randomized between 7, 8, 9, 10, 11 AM
-
-  function formatSimTime(mins) {
-    const paddedHour = String(startHour).padStart(2, '0');
-    const paddedMins = String(mins).padStart(2, '0');
-    return `${paddedHour}:${paddedMins} AM`;
-  }
-
-  function setupRandomMorningSchedule() {
-    const morningHours = [7, 8, 9, 10, 11];
-    startHour = morningHours[Math.floor(Math.random() * morningHours.length)];
-    const startStr = formatSimTime(0);
-    const medTargetStr = formatSimTime(15);
-    const medEndStr = formatSimTime(18);
-
-    document.getElementById('briefing-badge-time').innerText = startStr;
-    document.getElementById('briefing-start-time').innerText = startStr;
-    document.getElementById('briefing-med-time').innerText = medTargetStr;
-    document.getElementById('briefing-med-window').innerText = `${medTargetStr} 至 ${medEndStr}`;
-    document.getElementById('sim-clock').innerText = startStr;
-  }
-
-  // Initialize a random morning hour immediately on page load
-  setupRandomMorningSchedule();
-
-  function checkOrientation() {
-    orientationAttempts++;
-    const now = new Date();
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const cantoneseDays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
-    const cantoneseMonths = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
-
-    const actualDay = days[now.getDay()];
-    const actualMonth = now.getMonth().toString();
-    const actualDate = now.getDate().toString();
-
-    const userDay = document.getElementById('ori-day').value;
-    const userMonth = document.getElementById('ori-month').value;
-    const userDate = document.getElementById('ori-date').value;
-    const userPlace = document.getElementById('ori-place').value;
-
-    const isTimeCorrect = (userDay === actualDay && userMonth === actualMonth && userDate === actualDate);
-    const isPlaceCorrect = (userPlace === "Home / Clinic");
-
-    if (isTimeCorrect && isPlaceCorrect) {
-      document.getElementById('ori-feedback').innerText = "";
-      setupRandomMorningSchedule();
-      document.getElementById('phase-orientation').classList.add('hidden');
-      document.getElementById('phase-briefing').classList.remove('hidden');
-    } else {
-      const errors = [];
-      if (!isTimeCorrect) {
-        errors.push(`今日係${cantoneseMonths[now.getMonth()]}${now.getDate()}號，${cantoneseDays[now.getDay()]}`);
-      }
-      if (!isPlaceCorrect) {
-        errors.push(`你而家身處喺「屋企 / 治療室」`);
-      }
-      document.getElementById('ori-feedback').innerText =
-        `再睇清楚啲：${errors.join('；')}。請更正答案再繼續。`;
-    }
-  }
-
-  // Grocery Sorting Data
-  const groceries = [
-    { name: "🥛 新鮮牛奶", loc: "fridge" },
-    { name: "🥫 罐頭豆", loc: "pantry" },
-    { name: "🧀 車打芝士", loc: "fridge" },
-    { name: "🍝 乾意粉", loc: "pantry" },
-    { name: "🥚 一盒雞蛋", loc: "fridge" },
-    { name: "🍚 一包白米", loc: "pantry" },
-    { name: "🥬 新鮮生菜", loc: "fridge" },
-    { name: "🥣 麥皮盒", loc: "pantry" },
-    { name: "🍗 生雞肉", loc: "fridge" },
-    { name: "🥜 花生醬", loc: "pantry" }
-  ];
-
-  let groceryIndex = 0;
-  let sortedCount = 0;
-  let sortErrors = 0;
-  let simMinutes = 0; // 0 = startHour:00 AM, ends at 25 = startHour:25 AM
-  let clockInterval = null;
-
-  // Prospective Memory Tracking Metrics
-  const kettleBoilTime = 10; // Boils at +10 mins
-  let medsTakenTime = null;
-  let kettleBoiled = false;
-  let kettleTurnedOffTime = null;
-  let prematureKettleClicks = 0;
-
-  function showPmToast(msg) {
-    const toast = document.getElementById('pm-toast');
-    toast.innerText = msg;
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => {
-      toast.innerText = '';
-    }, 2500);
-  }
-
-  function nextGroceryItem() {
-    groceryIndex = (groceryIndex + 1) % groceries.length;
-    document.getElementById('current-item').innerText = groceries[groceryIndex].name;
-  }
-
-  function sortItem(chosenLoc) {
-    const current = groceries[groceryIndex];
-    const fb = document.getElementById('sort-feedback');
-    if (current.loc === chosenLoc) {
-      sortedCount++;
-      document.getElementById('sort-score').innerText = sortedCount;
-      fb.style.color = '#2f855a';
-      fb.innerText = '✅ 放啱位置！';
-      playTone(523.25, 0.15, 'sine');
-      nextGroceryItem();
-    } else {
-      sortErrors++;
-      fb.style.color = '#c53030';
-      fb.innerText = chosenLoc === 'fridge'
-        ? '❌ 呢樣唔使放雪櫃，試下放廚櫃！'
-        : '❌ 呢樣要冷藏保鮮，試下放雪櫃！';
-      playTone(196.0, 0.2, 'sawtooth');
-    }
-  }
-
-  function startGame() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
+    // 初始化日期選單
+    const daySelect = document.getElementById('daySelect');
+    for (let i = 1; i <= 31; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.textContent = i + ' 號';
+        daySelect.appendChild(opt);
     }
 
-    // Reset simulation state
-    groceryIndex = 0;
-    sortedCount = 0;
-    sortErrors = 0;
-    simMinutes = 0;
-    medsTakenTime = null;
-    kettleBoiled = false;
-    kettleTurnedOffTime = null;
-    prematureKettleClicks = 0;
+    // 16種常見雜貨物件庫
+    const groceryItems = [
+        { name: "🥛 新鮮牛奶", target: "fridge" },
+        { name: "🥚 雞蛋一盒", target: "fridge" },
+        { name: "🥬 新鮮菜心", target: "fridge" },
+        { name: "🥩 冰鮮豬肉", target: "fridge" },
+        { name: "🍚 絲苗白米", target: "cabinet" },
+        { name: "🥫 罐頭午餐肉", target: "cabinet" },
+        { name: "🍜 即食麵", target: "cabinet" },
+        { name: "🧻 廚房紙巾", target: "cabinet" },
+        { name: "🧀 片裝芝士", target: "fridge" },
+        { name: "🥟 急凍水餃", target: "fridge" },
+        { name: "🍶 鮮榨橙汁", target: "fridge" },
+        { name: "🧈 牛油", target: "fridge" },
+        { name: "🛢️ 花生油", target: "cabinet" },
+        { name: "🧂 調味幼鹽", target: "cabinet" },
+        { name: "🍝 意粉乾麵", target: "cabinet" },
+        { name: "🍪 蘇打餅乾", target: "cabinet" }
+    ];
 
-    document.getElementById('sort-score').innerText = '0';
-    document.getElementById('sort-feedback').innerText = '';
-    document.getElementById('pm-toast').innerText = '';
-    document.getElementById('current-item').innerText = groceries[0].name;
-    document.getElementById('sim-clock').innerText = formatSimTime(0);
-    document.getElementById('kettle-banner').classList.add('hidden');
-
-    const btnMeds = document.getElementById('btn-meds');
-    btnMeds.disabled = false;
-    btnMeds.style.opacity = '1';
-    btnMeds.innerText = '💊 食朝早藥';
-
-    const btnKettle = document.getElementById('btn-kettle');
-    btnKettle.disabled = false;
-    btnKettle.style.opacity = '1';
-    btnKettle.innerText = '🫖 熄火（水煲）';
-
-    document.getElementById('phase-briefing').classList.add('hidden');
-    document.getElementById('phase-game').classList.remove('hidden');
-
-    clearInterval(clockInterval);
-    clockInterval = setInterval(() => {
-      simMinutes++;
-      document.getElementById('sim-clock').innerText = formatSimTime(simMinutes);
-
-      // Event-based cue: Kettle boils at +10 mins
-      if (simMinutes === kettleBoilTime && kettleTurnedOffTime === null) {
-        kettleBoiled = true;
-        document.getElementById('kettle-banner').classList.remove('hidden');
-        playKettleWhistle();
-      } else if (kettleBoiled && kettleTurnedOffTime === null && simMinutes % 2 === 0) {
-        playKettleWhistle();
-      }
-
-      // End session after 25 simulated minutes
-      if (simMinutes >= 25) {
-        endGame();
-      }
-    }, 2500);
-  }
-
-  function triggerMeds() {
-    if (medsTakenTime !== null) return;
-    medsTakenTime = simMinutes;
-    const btn = document.getElementById('btn-meds');
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.innerText = `✅ 已食藥 (${formatSimTime(simMinutes)})`;
-    playTone(659.25, 0.25, 'triangle');
-    showPmToast(`已記錄於 ${formatSimTime(simMinutes)} 食朝早藥。`);
-  }
-
-  function triggerKettle() {
-    if (!kettleBoiled) {
-      prematureKettleClicks++;
-      playTone(220, 0.18, 'sine');
-      showPmToast('水仲未滾喎，繼續煲多陣先！');
-      return;
-    }
-    if (kettleTurnedOffTime !== null) return;
-    kettleTurnedOffTime = simMinutes;
-    document.getElementById('kettle-banner').classList.add('hidden');
-    const btn = document.getElementById('btn-kettle');
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.innerText = `✅ 已熄火 (${formatSimTime(simMinutes)})`;
-    playTone(587.33, 0.25, 'triangle');
-    showPmToast(`已記錄於 ${formatSimTime(simMinutes)} 熄咗水煲火。`);
-  }
-
-  function endGame() {
-    clearInterval(clockInterval);
-    document.getElementById('phase-game').classList.add('hidden');
-    document.getElementById('phase-results').classList.remove('hidden');
-
-    // Evaluate Time-Based Prospective Memory (Target: +15 to +18 mins after startHour)
-    let medsOutcome = '';
-    const targetStartStr = formatSimTime(15);
-    const targetEndStr = formatSimTime(18);
-    if (medsTakenTime === null) {
-      medsOutcome = '<span style="color:#c53030;">❌ 遺漏 — 整個練習期間唔記得食朝早藥。</span>';
-    } else if (medsTakenTime >= 15 && medsTakenTime <= 18) {
-      medsOutcome = `<span style="color:#2f855a;">✅ 準時完成 — 於 ${formatSimTime(medsTakenTime)} 食藥（目標時段：${targetStartStr}–${targetEndStr}）。</span>`;
-    } else if (medsTakenTime < 15) {
-      medsOutcome = `<span style="color:#dd6b20;">⚠️ 過早 — 於 ${formatSimTime(medsTakenTime)} 食藥（比 ${targetStartStr} 早咗 ${15 - medsTakenTime} 分鐘）。</span>`;
-    } else {
-      medsOutcome = `<span style="color:#dd6b20;">⚠️ 遲咗 — 於 ${formatSimTime(medsTakenTime)} 食藥（比目標時段遲咗 ${medsTakenTime - 18} 分鐘）。</span>`;
-    }
-
-    // Evaluate Event-Based Prospective Memory (Target: Kettle boils 10 mins after startHour)
-    let kettleOutcome = '';
-    if (kettleTurnedOffTime === null) {
-      kettleOutcome = '<span style="color:#c53030;">❌ 遺漏 — 水煲一直煲到練習結束都未熄火。</span>';
-    } else {
-      const delay = kettleTurnedOffTime - kettleBoilTime;
-      if (delay <= 1) {
-        kettleOutcome = `<span style="color:#2f855a;">✅ 反應敏捷 — 於 ${formatSimTime(kettleTurnedOffTime)} 熄火（水滾提示後 ${delay} 分鐘內完成）。</span>`;
-      } else {
-        kettleOutcome = `<span style="color:#dd6b20;">⚠️ 反應稍遲 — 於 ${formatSimTime(kettleTurnedOffTime)} 熄火（水滾提示後 ${delay} 分鐘先處理）。</span>`;
-      }
-    }
-
-    const totalSorts = sortedCount + sortErrors;
-    const sortAccuracy = totalSorts > 0 ? Math.round((sortedCount / totalSorts) * 100) : 0;
-
-    document.getElementById('results-content').innerHTML = `
-      <div class="metric-card">
-        <strong>1. 現實定向力測試：</strong> 用咗 ${orientationAttempts} 次嘗試完成確認。
-      </div>
-      <div class="metric-card">
-        <strong>2. 時間性前瞻記憶（${targetStartStr} 食朝早藥）：</strong><br>
-        ${medsOutcome}
-      </div>
-      <div class="metric-card">
-        <strong>3. 事件性前瞻記憶（水滾熄火）：</strong><br>
-        ${kettleOutcome}
-        ${prematureKettleClicks > 0 ? `<br><small>水未滾前提早檢查次數：${prematureKettleClicks} 次</small>` : ''}
-      </div>
-      <div class="metric-card">
-        <strong>4. 雙重任務執行（執拾食物雜貨）：</strong><br>
-        正確分類 ${sortedCount} 件物品（準確率 ${sortAccuracy}%，錯誤 ${sortErrors} 次）。
-      </div>
-    `;
-  }
-
-  function resetSession() {
-    orientationAttempts = 0;
-    setupRandomMorningSchedule();
-    document.getElementById('ori-day').value = '';
-    document.getElementById('ori-month').value = '';
-    document.getElementById('ori-date').value = '';
-    document.getElementById('ori-place').value = '';
-    document.getElementById('ori-feedback').innerText = '';
-    document.getElementById('phase-results').classList.add('hidden');
-    document.getElementById('phase-orientation').classList.remove('hidden');
-  }
-</script>
-</body>
-</html>
+    // 電話干擾情境庫
+    const distractionScenarios = [
+        {
+            title: "📞 屋企人打電話嚟",
+            question: "「喂，我今晚返嚟食飯呀，我想問下頭先買返嚟嘅『冰鮮豬肉』應該放喺邊度？」",
+            options: [
+                { text: "放入雪櫃保鮮", correct: true },
+                { text: "放喺廚櫃室溫保存", correct: false }
+            ]
+        },
+        {
+            title: "📞 診所姑娘打電話嚟",
+            question: "「早晨呀，我哋想核對一下，請問你今日覆診係幾多月份呀？」",
+            options: [
+                { text: `${new Date().getMonth() + 1} 月`, correct: true },
+                { text: `${((new Date().getMonth() + 2) % 12) || 12} 月`, correct: false }
+            ]
+        },
+        {
+            title: "📞 鄰居陳太打電話嚟",
+            question: "「唔好意思阻你一陣，請問你而家身處喺邊度呀？我喺樓下大堂。」",
+            options: [
