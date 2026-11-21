@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>公園藍色小怪獸滑塊拼圖</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Tone.js 製作清脆的木頭/塑膠滑塊碰撞音效 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+TC:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background-color: #2f4538; /* 公園綠色軟墊背景色 */
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.25) 2px, transparent 2px),
+                linear-gradient(to bottom, rgba(0,0,0,0.25) 2px, transparent 2px);
+            background-size: 80px 80px;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 遊樂場米黃色木塑面板質感 */
+        .playground-board {
+            background: linear-gradient(145deg, #f3d6b8, #e2be9b);
+            box-shadow: 
+                0 20px 35px rgba(0, 0, 0, 0.45),
+                inset 0 2px 4px rgba(255, 255, 255, 0.6),
+                inset 0 -4px 8px rgba(139, 98, 62, 0.3);
+            border: 3px solid #cfa57e;
+        }
+
+        /* 面板四角的深褐色防撞螺栓 */
+        .corner-bolt {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #8d7b74, #4a3f3b);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.4);
+        }
+
+        /* 淡紫色滑軌外框 */
+        .purple-frame {
+            background-color: #b4b2d8;
+            box-shadow: 
+                0 6px 12px rgba(0,0,0,0.25),
+                inset 0 2px 3px rgba(255,255,255,0.6),
+                inset 0 -2px 4px rgba(85, 82, 128, 0.4);
+            border: 2px solid #8e8bb8;
+        }
+
+        /* 小螺絲釘 */
+        .screw {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #555 20%, #999 70%);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.5);
+            position: relative;
+        }
+        .screw::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: #222;
+            transform: rotate(45deg);
+        }
+
+        /* 凹槽底板（空位顯示的木紋質感） */
+        .recessed-slot {
+            background-color: #d6a468;
+            background-image: repeating-linear-gradient(
+                90deg,
+                rgba(180, 125, 65, 0.15) 0px,
+                rgba(180, 125, 65, 0.15) 4px,
+                transparent 4px,
+                transparent 10px
+            );
+            box-shadow: inset 0 6px 14px rgba(82, 52, 20, 0.55);
+        }
+
+        /* 拼圖方塊樣式 */
+        .puzzle-tile {
+            position: absolute;
+            transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 
+                inset 0 2px 3px rgba(255, 255, 255, 0.55),
+                inset 0 -2px 4px rgba(28, 41, 87, 0.35),
+                0 2px 5px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+
+        .puzzle-tile:active {
+            filter: brightness(1.04);
+        }
+
+        /* 勝利光暈動畫 */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.75); }
+            50% { box-shadow: 0 0 32px rgba(250, 204, 21, 0.95); }
+        }
+        .solved-glow {
+            animation: pulseGlow 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6">
+
+    <!-- 頂部標題與控制欄 -->
+    <div class="w-full max-w-md mb-4 flex flex-col items-center">
+        <h1 class="text-2xl sm:text-3xl font-bold text-amber-100 drop-shadow-md tracking-wide mb-3 flex items-center gap-2">
+            <span>🛸</span> 公園藍色小怪獸拼圖
+        </h1>
+
+        <!-- 難度選擇按鈕 (3x3, 4x4, 5x5) -->
+        <div class="flex bg-black/30 p-1.5 rounded-2xl backdrop-blur-sm border border-white/10 w-full justify-between gap-1.5 mb-3">
+            <button onclick="setGridSize(3)" id="btn-3" class="size-btn flex-1 py-2 px-3 rounded-xl font-bold text-sm sm:text-base transition-all bg-sky-500 text-white shadow-md">
+                3 × 3 (原版)
+            </button>
+            <button onclick="setGridSize(4)" id="btn-4" class="size-btn flex-1 py-2 px-3 rounded-xl font-bold text-sm sm:text-base transition-all text-amber-100 hover:bg-white/10">
+                4 × 4 (進階)
+            </button>
+            <button onclick="setGridSize(5)" id="btn-5" class="size-btn flex-1 py-2 px-3 rounded-xl font-bold text-sm sm:text-base transition-all text-amber-100 hover:bg-white/10">
+                5 × 5 (挑戰)
+            </button>
+        </div>
+
+        <!-- 狀態資訊列：步數、時間、上傳相片與音效 -->
+        <div class="flex justify-between items-center w-full bg-black/25 px-4 py-2 rounded-xl text-amber-50 text-sm sm:text-base border border-white/10">
+            <div class="flex items-center gap-2">
+                <span class="opacity-80">步數:</span>
+                <span id="move-count" class="font-bold text-sky-300 text-lg">0</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="opacity-80">時間:</span>
+                <span id="timer-display" class="font-bold text-amber-300 text-lg font-mono">00:00</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <label for="custom-image-input" class="cursor-pointer px-2.5 py-1 rounded-lg bg-sky-500/80 hover:bg-sky-500 text-white text-xs sm:text-sm font-bold transition flex items-center gap-1" title="換成你手機裡的相片">
+                    <span>🖼️</span> 換圖
+                </label>
+                <input type="file" id="custom-image-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                <button id="sound-toggle" onclick="toggleSound()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition" title="切換音效">
+                    🔊
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊樂場主體面板 -->
+    <div class="playground-board relative w-full max-w-[420px] aspect-square rounded-3xl p-5 sm:p-7 flex items-center justify-center">
+        <!-- 四角防撞螺栓 -->
+        <div class="corner-bolt absolute top-3 left-3"></div>
+        <div class="corner-bolt absolute top-3 right-3"></div>
+        <div class="corner-bolt absolute bottom-3 left-3"></div>
+        <div class="corner-bolt absolute bottom-3 right-3"></div>
+
+        <!-- 淡紫色外框容器 -->
+        <div id="frame-container" class="purple-frame relative w-full h-full rounded-2xl p-3.5 sm:p-4 flex items-center justify-center">
+            <!-- 外框裝飾螺絲 -->
+            <div class="screw absolute top-1.5 left-1.5"></div>
+            <div class="screw absolute top-1.5 left-1/2 -translate-x-1/2"></div>
+            <div class="screw absolute top-1.5 right-1.5"></div>
+            <div class="screw absolute bottom-1.5 left-1.5"></div>
+            <div class="screw absolute bottom-1.5 left-1/2 -translate-x-1/2"></div>
+            <div class="screw absolute bottom-1.5 right-1.5"></div>
+            <div class="screw absolute left-1.5 top-1/2 -translate-y-1/2"></div>
+            <div class="screw absolute right-1.5 top-1/2 -translate-y-1/2"></div>
+
+            <!-- 底部延伸出的L型防撞凸起 -->
+            <div class="purple-frame absolute -bottom-[2px] -right-3 w-5 h-3.5 rounded-r-full border-l-0"></div>
+
+            <!-- 內部拼圖凹槽區 -->
+            <div id="puzzle-grid" class="recessed-slot relative w-full h-full rounded-lg overflow-hidden">
+                <!-- 拼圖方塊會由 JS 動態生成於此 -->
+            </div>
+
+            <!-- 原圖預覽覆蓋層 (按住提示按鈕時顯示) -->
+            <div id="hint-overlay" class="absolute inset-3.5 sm:inset-4 rounded-lg overflow-hidden pointer-events-none opacity-0 transition-opacity duration-200 z-20 shadow-2xl border-2 border-white bg-white">
+                <img id="hint-image" src="" alt="原圖提示" class="w-full h-full object-cover">
+                <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">原圖參考</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作按鈕列 -->
+    <div class="w-full max-w-[420px] mt-5 flex gap-3">
+        <button onclick="shuffleGame()" class="flex-1 bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:translate-y-0.5 text-amber-950 font-bold py-3 px-4 rounded-2xl shadow-lg border-b-4 border-amber-700 transition flex items-center justify-center gap-2 text-base sm:text-lg">
+            <span>🔀</span> 重新打亂
+        </button>
+        
+        <button 
+            onmousedown="showHint(true)" 
+            onmouseup="showHint(false)" 
+            onmouseleave="showHint(false)"
+            ontouchstart="showHint(true)" 
+            ontouchend="showHint(false)"
+            class="flex-1 bg-gradient-to-b from-indigo-400 to-indigo-500 hover:from-indigo-300 hover:to-indigo-400 active:translate-y-0.5 text-white font-bold py-3 px-4 rounded-2xl shadow-lg border-b-4 border-indigo-700 transition flex items-center justify-center gap-2 text-base sm:text-lg">
+            <span>👁️</span> 按住看原圖
+        </button>
+    </div>
+
+    <!-- 過關祝賀彈窗 -->
+    <div id="win-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-gradient-to-b from-sky-50 to-indigo-100 border-4 border-sky-400 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-200" id="win-modal-box">
+            <div class="text-5xl mb-2">🎉🛸👑</div>
+            <h2 class="text-2xl font-bold text-sky-600 mb-1">拼圖完成！</h2>
+            <p class="text-stone-600 text-sm mb-4">你成功復原了公園的藍色小怪獸！</p>
+            
+            <div class="bg-white/80 rounded-2xl p-3 mb-5 flex justify-around border border-sky-200">
+                <div>
+                    <div class="text-xs text-stone-500">難度</div>
+                    <div id="win-size" class="font-bold text-stone-800 text-lg">3 × 3</div>
+                </div>
+                <div class="w-px bg-sky-200"></div>
+                <div>
+                    <div class="text-xs text-stone-500">總步數</div>
+                    <div id="win-moves" class="font-bold text-sky-600 text-lg">0</div>
+                </div>
+                <div class="w-px bg-sky-200"></div>
+                <div>
+                    <div class="text-xs text-stone-500">花費時間</div>
+                    <div id="win-time" class="font-bold text-amber-600 text-lg">00:00</div>
+                </div>
+            </div>
+
+            <button onclick="closeWinModalAndRestart()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-bold py-3 rounded-xl shadow-md border-b-4 border-indigo-700 active:translate-y-0.5 transition text-lg">
+                再玩一次
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 繪製高精細度「水彩蠟筆風藍色小怪獸」插畫畫布
+        // ==========================================
+        function generateCharacterArtworkDataURL() {
+            const canvas = document.createElement('canvas');
+            const size = 900;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 純白底色
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+
+            const outlineColor = '#1b2654';
+            const deepBlue = '#2759a3';
+            const midBlue = '#4d96db';
+            const lightBlue = '#97daf5';
+            const earLavender = '#c8bede';
+            const earInnerHighlight = '#ece7f5';
+            const mouthCoral = '#e36478';
+            const tonguePink = '#f598a8';
+            const toothIvory = '#fff6cf';
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // 輔助函數：模擬水彩蠟筆顆粒筆觸
+            function addWatercolorTexture(x, y, r, color, alpha = 0.25) {
+                ctx.save();
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha;
+                for (let i = 0; i < 45; i++) {
+                    const ang = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * r;
+                    const px = x + Math.cos(ang) * dist;
+                    const py = y + Math.sin(ang) * dist;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 2 + Math.random() * 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // 1. 身體、雙腿與左手臂底色
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(325, 485);
+            // 左手向外張開與三根小爪子
+            ctx.quadraticCurveTo(235, 520, 195, 600);
+            ctx.quadraticCurveTo(175, 635, 145, 638);
+            ctx.quadraticCurveTo(132, 648, 152, 662);
+            ctx.quadraticCurveTo(172, 668, 185, 682);
+            ctx.quadraticCurveTo(175, 705, 198, 710);
+            ctx.quadraticCurveTo(215, 705, 225, 692);
+            ctx.quadraticCurveTo(222, 725, 242, 728);
+            ctx.quadraticCurveTo(262, 715, 272, 682);
+            ctx.quadraticCurveTo(295, 645, 325, 610);
+            // 左腿與寬大腳掌
+            ctx.lineTo(325, 735);
+            ctx.quadraticCurveTo(255, 755, 235, 795);
+            ctx.quadraticCurveTo(228, 835, 305, 832);
+            ctx.quadraticCurveTo(385, 825, 425, 798);
+            // 胯下連接右腿
+            ctx.lineTo(565, 798);
+            ctx.quadraticCurveTo(568, 855, 635, 855);
+            ctx.quadraticCurveTo(725, 855, 718, 815);
+            ctx.quadraticCurveTo(705, 788, 658, 775);
+            ctx.lineTo(638, 615);
+            ctx.quadraticCurveTo(665, 545, 595, 480);
+            ctx.closePath();
+            ctx.fillStyle = midBlue;
+            ctx.fill();
+
+            // 身體水彩深藍陰影與高光
+            addWatercolorTexture(265, 610, 85, deepBlue, 0.35);
+            addWatercolorTexture(605, 680, 110, deepBlue, 0.35);
+            addWatercolorTexture(320, 790, 85, deepBlue, 0.3);
+            addWatercolorTexture(640, 815, 80, deepBlue, 0.3);
+
+            // 肚子淺藍色楕圓
+            ctx.beginPath();
+            ctx.ellipse(468, 645, 112, 138, -0.04, 0, Math.PI * 2);
+            ctx.fillStyle = lightBlue;
+            ctx.fill();
+            addWatercolorTexture(468, 645, 95, '#bce8fa', 0.4);
+            ctx.restore();
+
+            // 2. 舉在胸前的右手臂與爪子
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(535, 515);
+            ctx.quadraticCurveTo(605, 545, 602, 635);
+            ctx.quadraticCurveTo(598, 695, 535, 712);
+            ctx.quadraticCurveTo(475, 725, 435, 685);
+            ctx.quadraticCurveTo(410, 662, 435, 650);
+            ctx.quadraticCurveTo(465, 642, 485, 645);
+            ctx.quadraticCurveTo(515, 625, 518, 585);
+            ctx.quadraticCurveTo(518, 555, 488, 535);
+            ctx.closePath();
+            ctx.fillStyle = midBlue;
+            ctx.fill();
+            addWatercolorTexture(555, 625, 65, lightBlue, 0.35);
+
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+
+            // 右手小爪子
+            [
+                [425, 662, 405, 672],
+                [442, 692, 428, 708],
+                [472, 712, 464, 730],
+                [505, 715, 502, 734]
+            ].forEach(([x1, y1, x2, y2]) => {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.lineWidth = 7;
+                ctx.strokeStyle = outlineColor;
+                ctx.stroke();
+            });
+            ctx.restore();
+
+            // 3. 大耳朵（左耳帶缺口、右耳帶缺口）
+            // 左耳外輪廓
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(288, 415);
+            ctx.quadraticCurveTo(175, 345, 165, 215);
+            ctx.quadraticCurveTo(165, 155, 195, 138);
+            ctx.lineTo(232, 138);
+            ctx.lineTo(212, 108);
+            ctx.quadraticCurveTo(235, 65, 268, 72);
+            ctx.quadraticCurveTo(295, 82, 285, 165);
+            ctx.quadraticCurveTo(312, 235, 315, 305);
+            ctx.closePath();
+            ctx.fillStyle = midBlue;
+            ctx.fill();
+
+            // 左耳淡紫內耳
+            ctx.beginPath();
+            ctx.moveTo(275, 385);
+            ctx.quadraticCurveTo(192, 315, 185, 210);
+            ctx.quadraticCurveTo(185, 162, 212, 152);
+            ctx.lineTo(245, 152);
+            ctx.lineTo(228, 118);
+            ctx.quadraticCurveTo(248, 85, 265, 92);
+            ctx.quadraticCurveTo(275, 145, 265, 235);
+            ctx.quadraticCurveTo(262, 315, 275, 385);
+            ctx.closePath();
+            ctx.fillStyle = earLavender;
+            ctx.fill();
+            addWatercolorTexture(225, 225, 65, earInnerHighlight, 0.55);
+
+            ctx.lineWidth = 13;
+            ctx.strokeStyle = outlineColor;
+            ctx.beginPath();
+            ctx.moveTo(288, 415);
+            ctx.quadraticCurveTo(175, 345, 165, 215);
+            ctx.quadraticCurveTo(165, 155, 195, 138);
+            ctx.lineTo(232, 138);
+            ctx.lineTo(212, 108);
+            ctx.quadraticCurveTo(235, 65, 268, 72);
+            ctx.quadraticCurveTo(295, 82, 285, 165);
+            ctx.quadraticCurveTo(312, 235, 315, 305);
+            ctx.stroke();
+
+            // 左耳內側折線
+            ctx.beginPath();
+            ctx.moveTo(278, 175);
+            ctx.quadraticCurveTo(255, 265, 278, 395);
+            ctx.lineWidth = 10;
+            ctx.stroke();
+            ctx.restore();
+
+            // 右耳外輪廓
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(645, 335);
+            ctx.quadraticCurveTo(685, 245, 725, 182);
+            ctx.quadraticCurveTo(755, 155, 775, 195);
+            ctx.quadraticCurveTo(795, 275, 765, 365);
+            ctx.lineTo(735, 368);
+            ctx.lineTo(752, 395);
+            ctx.quadraticCurveTo(715, 445, 635, 452);
+            ctx.closePath();
+            ctx.fillStyle = midBlue;
+            ctx.fill();
+
+            // 右耳淡紫內耳
+            ctx.beginPath();
+            ctx.moveTo(678, 365);
+            ctx.quadraticCurveTo(705, 255, 738, 198);
+            ctx.quadraticCurveTo(762, 182, 768, 225);
+            ctx.quadraticCurveTo(775, 295, 748, 355);
+            ctx.lineTo(722, 358);
+            ctx.lineTo(735, 385);
+            ctx.quadraticCurveTo(702, 422, 665, 425);
+            ctx.closePath();
+            ctx.fillStyle = earLavender;
+            ctx.fill();
+            addWatercolorTexture(725, 295, 55, earInnerHighlight, 0.55);
+
+            ctx.lineWidth = 13;
+            ctx.strokeStyle = outlineColor;
+            ctx.beginPath();
+            ctx.moveTo(645, 335);
+            ctx.quadraticCurveTo(685, 245, 725, 182);
+            ctx.quadraticCurveTo(755, 155, 775, 195);
+            ctx.quadraticCurveTo(795, 275, 765, 365);
+            ctx.lineTo(735, 368);
+            ctx.lineTo(752, 395);
+            ctx.quadraticCurveTo(715, 445, 635, 452);
+            ctx.stroke();
+
+            // 右耳內側折線
+            ctx.beginPath();
+            ctx.moveTo(692, 265);
+            ctx.quadraticCurveTo(678, 345, 655, 435);
+            ctx.lineWidth = 10;
+            ctx.stroke();
+            ctx.restore();
+
+            // 4. 頭部主體與頭頂兩撮呆毛
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(325, 295);
+            ctx.quadraticCurveTo(375, 245, 455, 245);
+            ctx.lineTo(462, 218);
+            ctx.lineTo(476, 234);
+            ctx.lineTo(494, 218);
+            ctx.lineTo(504, 248);
+            ctx.quadraticCurveTo(585, 265, 622, 335);
+            ctx.quadraticCurveTo(655, 415, 602, 488);
+            ctx.quadraticCurveTo(535, 542, 442, 538);
+            ctx.quadraticCurveTo(335, 530, 295, 448);
+            ctx.quadraticCurveTo(275, 365, 325, 295);
+            ctx.closePath();
+            ctx.fillStyle = midBlue;
+            ctx.fill();
+
+            // 額頭與臉頰水彩高光與陰影
+            addWatercolorTexture(475, 295, 75, lightBlue, 0.55);
+            addWatercolorTexture(335, 455, 65, deepBlue, 0.3);
+            addWatercolorTexture(585, 455, 65, deepBlue, 0.3);
+
+            ctx.lineWidth = 13;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+            ctx.restore();
+
+            // 5. 雙眼、大鼻頭與張嘴大笑
+            // 左眼眼眶與眼珠
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(372, 365, 52, 74, -0.08, 0, Math.PI * 2);
+            ctx.fillStyle = lightBlue;
+            ctx.fill();
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(378, 372, 36, 52, -0.05, 0, Math.PI * 2);
+            ctx.fillStyle = outlineColor;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(365, 345, 13, 0, Math.PI * 2);
+            ctx.arc(356, 378, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.restore();
+
+            // 右眼眼眶與眼珠
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(568, 378, 48, 70, 0.08, 0, Math.PI * 2);
+            ctx.fillStyle = lightBlue;
+            ctx.fill();
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(562, 384, 32, 48, 0.05, 0, Math.PI * 2);
+            ctx.fillStyle = outlineColor;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(574, 358, 12, 0, Math.PI * 2);
+            ctx.arc(582, 388, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.restore();
+
+            // 大圓鼻頭
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(475, 392, 54, 42, 0, 0, Math.PI * 2);
+            ctx.fillStyle = deepBlue;
+            ctx.fill();
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+
+            // 鼻孔與鼻頭高光
+            ctx.beginPath();
+            ctx.ellipse(462, 374, 22, 11, -0.15, 0, Math.PI * 2);
+            ctx.fillStyle = midBlue;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(445, 398, 9, 14, 0.3, 0, Math.PI * 2);
+            ctx.ellipse(505, 398, 9, 14, -0.3, 0, Math.PI * 2);
+            ctx.fillStyle = outlineColor;
+            ctx.fill();
+
+            // 鼻樑兩條皺紋
+            ctx.beginPath();
+            ctx.moveTo(452, 322);
+            ctx.quadraticCurveTo(476, 315, 502, 322);
+            ctx.moveTo(458, 336);
+            ctx.quadraticCurveTo(476, 330, 496, 336);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+            ctx.restore();
+
+            // 開心大笑的嘴巴
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(322, 438);
+            ctx.quadraticCurveTo(475, 485, 612, 468);
+            ctx.quadraticCurveTo(565, 522, 462, 522);
+            ctx.quadraticCurveTo(365, 518, 322, 438);
+            ctx.closePath();
+            ctx.fillStyle = mouthCoral;
+            ctx.fill();
+
+            // 口腔上方深色陰影
+            ctx.save();
+            ctx.clip();
+            ctx.beginPath();
+            ctx.ellipse(470, 448, 130, 26, 0.05, 0, Math.PI * 2);
+            ctx.fillStyle = outlineColor;
+            ctx.fill();
+
+            // 粉紅舌頭
+            ctx.beginPath();
+            ctx.ellipse(435, 505, 48, 22, 0.05, 0, Math.PI * 2);
+            ctx.ellipse(498, 508, 45, 22, -0.08, 0, Math.PI * 2);
+            ctx.fillStyle = tonguePink;
+            ctx.fill();
+
+            // 兩顆尖小虎牙
+            ctx.fillStyle = toothIvory;
+            ctx.beginPath();
+            ctx.moveTo(395, 452);
+            ctx.lineTo(414, 455);
+            ctx.lineTo(405, 472);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(525, 464);
+            ctx.lineTo(545, 465);
+            ctx.lineTo(535, 484);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = outlineColor;
+            ctx.beginPath();
+            ctx.moveTo(322, 438);
+            ctx.quadraticCurveTo(475, 485, 612, 468);
+            ctx.quadraticCurveTo(565, 522, 462, 522);
+            ctx.quadraticCurveTo(365, 518, 322, 438);
+            ctx.stroke();
+            ctx.restore();
+
+            // 6. 身體外輪廓粗線與胸毛細節
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(325, 515);
+            ctx.quadraticCurveTo(235, 535, 195, 600);
+            ctx.quadraticCurveTo(175, 635, 145, 638);
+            ctx.quadraticCurveTo(132, 648, 152, 662);
+            ctx.quadraticCurveTo(172, 668, 185, 682);
+            ctx.quadraticCurveTo(175, 705, 198, 710);
+            ctx.quadraticCurveTo(215, 705, 225, 692);
+            ctx.quadraticCurveTo(222, 725, 242, 728);
+            ctx.quadraticCurveTo(262, 715, 272, 682);
+            ctx.quadraticCurveTo(295, 645, 325, 610);
+            ctx.lineTo(325, 735);
+            ctx.quadraticCurveTo(255, 755, 235, 795);
+            ctx.quadraticCurveTo(228, 835, 305, 832);
+            ctx.quadraticCurveTo(385, 825, 425, 798);
+            ctx.lineTo(565, 798);
+            ctx.quadraticCurveTo(568, 855, 635, 855);
+            ctx.quadraticCurveTo(725, 855, 718, 815);
+            ctx.quadraticCurveTo(705, 788, 658, 775);
+            ctx.lineTo(638, 615);
+            ctx.quadraticCurveTo(665, 545, 595, 505);
+            ctx.lineWidth = 13;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+
+            // 胸口小絨毛線條
+            ctx.beginPath();
+            ctx.moveTo(418, 565);
+            ctx.lineTo(426, 592);
+            ctx.lineTo(438, 578);
+            ctx.lineTo(448, 596);
+            ctx.lineTo(458, 576);
+            ctx.lineWidth = 7;
+            ctx.strokeStyle = outlineColor;
+            ctx.stroke();
+            ctx.restore();
+
+            return canvas.toDataURL('image/png');
+        }
+
+        // 支援使用者直接從手機/電腦上傳相片替換拼圖圖案
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // 將上傳圖片置中裁切為正方形並保留白底，確保不會變形
+                    const sqCanvas = document.createElement('canvas');
+                    const sqSize = 900;
+                    sqCanvas.width = sqSize;
+                    sqCanvas.height = sqSize;
+                    const sCtx = sqCanvas.getContext('2d');
+
+                    sCtx.fillStyle = '#ffffff';
+                    sCtx.fillRect(0, 0, sqSize, sqSize);
+
+                    const scale = Math.min(sqSize / img.width, sqSize / img.height);
+                    const drawW = img.width * scale;
+                    const drawH = img.height * scale;
+                    const offsetX = (sqSize - drawW) / 2;
+                    const offsetY = (sqSize - drawH) / 2;
+
+                    sCtx.drawImage(img, offsetX, offsetY, drawW, drawH);
+                    artworkURL = sqCanvas.toDataURL('image/png');
+                    document.getElementById('hint-image').src = artworkURL;
+                    shuffleGame();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ==========================================
+        // 2. 遊戲狀態與音效系統
+        // ==========================================
+        let gridSize = 3; // 預設 3x3
+        let tiles = []; // 儲存每個位置目前的方塊編號 (0 代表空格，其餘為 1 ~ N*N-1)
+        let emptyPos = { r: 0, c: 0 };
+        let moveCount = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isSolved = false;
+        let soundEnabled = true;
+        let artworkURL = '';
+
+        // 觸控滑動追蹤變數
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        // 初始化音效合成器 (模擬塑膠/木質滑塊碰撞聲)
+        let slideSynth = null;
+        let winSynth = null;
+
+        function initAudio() {
+            if (!slideSynth && window.Tone) {
+                slideSynth = new Tone.MembraneSynth({
+                    pitchDecay: 0.02,
+                    octaves: 2,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.002, decay: 0.08, sustain: 0, release: 0.05 }
+                }).toDestination();
+                slideSynth.volume.value = -8;
+
+                winSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                winSynth.volume.value = -6;
+            }
+        }
+
+        function playSlideSound() {
+            if (!soundEnabled) return;
+            try {
+                if (Tone.context.state !== 'running') Tone.start();
+                if (!slideSynth) initAudio();
+                slideSynth.triggerAttackRelease('C3', '32n');
+            } catch (e) {}
+        }
+
+        function playWinSound() {
+            if (!soundEnabled) return;
+            try {
+                if (Tone.context.state !== 'running') Tone.start();
+                if (!winSynth) initAudio();
+                const now = Tone.now();
+                winSynth.triggerAttackRelease('C5', '16n', now);
+                winSynth.triggerAttackRelease('E5', '16n', now + 0.1);
+                winSynth.triggerAttackRelease('G5', '16n', now + 0.2);
+                winSynth.triggerAttackRelease('C6', '8n', now + 0.3);
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // ==========================================
+        // 3. 拼圖核心邏輯與渲染
+        // ==========================================
+        function setGridSize(size) {
+            gridSize = size;
+            [3, 4, 5].forEach(s => {
+                const btn = document.getElementById(`btn-${s}`);
+                if (s === size) {
+                    btn.className = 'size-btn flex-1 py-2 px-3 rounded-xl font-bold text-sm sm:text-base transition-all bg-sky-500 text-white shadow-md';
+                } else {
+                    btn.className = 'size-btn flex-1 py-2 px-3 rounded-xl font-bold text-sm sm:text-base transition-all text-amber-100 hover:bg-white/10';
+                }
+            });
+            shuffleGame();
+        }
+
+        // 初始化已解決的狀態 (空格位於左上角 (0,0))
+        function initSolvedState() {
+            tiles = [];
+            for (let r = 0; r < gridSize; r++) {
+                const row = [];
+                for (let c = 0; c < gridSize; c++) {
+                    if (r === 0 && c === 0) {
+                        row.push(0);
+                    } else {
+                        row.push(r * gridSize + c);
+                    }
+                }
+                tiles.push(row);
+            }
+            emptyPos = { r: 0, c: 0 };
+        }
+
+        // 透過模擬合法隨機移動來打亂，100% 保證拼圖有解
+        function shuffleGame() {
+            initSolvedState();
+            isSolved = false;
+            moveCount = 0;
+            updateStatsUI();
+            resetTimer();
+
+            const gridEl = document.getElementById('puzzle-grid');
+            gridEl.classList.remove('solved-glow');
+
+            const shuffleSteps = gridSize === 3 ? 60 : (gridSize === 4 ? 140 : 250);
+            let lastMove = null;
+
+            for (let i = 0; i < shuffleSteps; i++) {
+                const neighbors = [];
+                const dirs = [
+                    { dr: -1, dc: 0 },
+                    { dr: 1, dc: 0 },
+                    { dr: 0, dc: -1 },
+                    { dr: 0, dc: 1 }
+                ];
+
+                for (const d of dirs) {
+                    const nr = emptyPos.r + d.dr;
+                    const nc = emptyPos.c + d.dc;
+                    if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+                        if (!lastMove || nr !== lastMove.r || nc !== lastMove.c) {
+                            neighbors.push({ r: nr, c: nc });
+                        }
+                    }
+                }
+
+                const chosen = neighbors[Math.floor(Math.random() * neighbors.length)];
+                lastMove = { r: emptyPos.r, c: emptyPos.c };
+
+                tiles[emptyPos.r][emptyPos.c] = tiles[chosen.r][chosen.c];
+                tiles[chosen.r][chosen.c] = 0;
+                emptyPos = { r: chosen.r, c: chosen.c };
+            }
+
+            if (checkWinCondition()) {
+                shuffleGame();
+                return;
+            }
+
+            renderBoard();
+        }
+
+        // 渲染拼圖方塊 DOM
+        function renderBoard() {
+            const gridEl = document.getElementById('puzzle-grid');
+            gridEl.innerHTML = '';
+
+            const tilePercent = 100 / gridSize;
+            const gapPx = gridSize === 3 ? 3 : (gridSize === 4 ? 2 : 1.5);
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const val = tiles[r][c];
+                    if (val === 0) continue;
+
+                    const origR = Math.floor(val / gridSize);
+                    const origC = val % gridSize;
+
+                    const tile = document.createElement('div');
+                    tile.className = 'puzzle-tile';
+                    tile.dataset.val = val;
+                    tile.dataset.r = r;
+                    tile.dataset.c = c;
+
+                    tile.style.width = `calc(${tilePercent}% - ${gapPx * 2}px)`;
+                    tile.style.height = `calc(${tilePercent}% - ${gapPx * 2}px)`;
+                    tile.style.left = `${gapPx}px`;
+                    tile.style.top = `${gapPx}px`;
+                    tile.style.transform = `translate(calc(${c * 100}% + ${c * gapPx * 2}px), calc(${r * 100}% + ${r * gapPx * 2}px))`;
+
+                    tile.style.backgroundImage = `url(${artworkURL})`;
+                    tile.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
+                    const bgPosX = gridSize > 1 ? (origC / (gridSize - 1)) * 100 : 0;
+                    const bgPosY = gridSize > 1 ? (origR / (gridSize - 1)) * 100 : 0;
+                    tile.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+
+                    tile.addEventListener('click', () => handleTileClick(val));
+
+                    gridEl.appendChild(tile);
+                }
+            }
+        }
+
+        // 更新方塊視覺位置 (平滑滑動動畫)
+        function updateTilePositions() {
+            const gapPx = gridSize === 3 ? 3 : (gridSize === 4 ? 2 : 1.5);
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const val = tiles[r][c];
+                    if (val === 0) continue;
+                    const tileEl = document.querySelector(`.puzzle-tile[data-val="${val}"]`);
+                    if (tileEl) {
+                        tileEl.dataset.r = r;
+                        tileEl.dataset.c = c;
+                        tileEl.style.transform = `translate(calc(${c * 100}% + ${c * gapPx * 2}px), calc(${r * 100}% + ${r * gapPx * 2}px))`;
+                    }
+                }
+            }
+        }
+
+        // 點擊方塊處理 (支援單格滑動以及同行/同列多格連動滑動)
+        function handleTileClick(val) {
+            if (isSolved) return;
+
+            let tr = -1, tc = -1;
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (tiles[r][c] === val) {
+                        tr = r;
+                        tc = c;
+                        break;
+                    }
+                }
+            }
+
+            if (tr === emptyPos.r) {
+                const step = tc < emptyPos.c ? -1 : 1;
+                for (let c = emptyPos.c; c !== tc; c += step) {
+                    tiles[tr][c] = tiles[tr][c + step];
+                }
+                tiles[tr][tc] = 0;
+                emptyPos = { r: tr, c: tc };
+                onValidMove();
+            } else if (tc === emptyPos.c) {
+                const step = tr < emptyPos.r ? -1 : 1;
+                for (let r = emptyPos.r; r !== tr; r += step) {
+                    tiles[r][tc] = tiles[r + step][tc];
+                }
+                tiles[tr][tc] = 0;
+                emptyPos = { r: tr, c: tc };
+                onValidMove();
+            }
+        }
+
+        // 方向移動輔助 (用於觸控滑動手勢與鍵盤方向鍵)
+        function moveEmptyByDirection(dr, dc) {
+            if (isSolved) return;
+            const targetR = emptyPos.r - dr;
+            const targetC = emptyPos.c - dc;
+
+            if (targetR >= 0 && targetR < gridSize && targetC >= 0 && targetC < gridSize) {
+                tiles[emptyPos.r][emptyPos.c] = tiles[targetR][targetC];
+                tiles[targetR][targetC] = 0;
+                emptyPos = { r: targetR, c: targetC };
+                onValidMove();
+            }
+        }
+
+        function onValidMove() {
+            if (moveCount === 0) startTimer();
+            moveCount++;
+            updateStatsUI();
+            updateTilePositions();
+            playSlideSound();
+
+            if (checkWinCondition()) {
+                isSolved = true;
+                stopTimer();
+                document.getElementById('puzzle-grid').classList.add('solved-glow');
+                setTimeout(() => {
+                    playWinSound();
+                    showWinModal();
+                }, 250);
+            }
+        }
+
+        function checkWinCondition() {
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const expected = (r === 0 && c === 0) ? 0 : (r * gridSize + c);
+                    if (tiles[r][c] !== expected) return false;
+                }
+            }
+            return true;
+        }
+
+        // ==========================================
+        // 4. 計時器、提示與彈窗 UI 控制
+        // ==========================================
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateStatsUI();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timerSeconds = 0;
+            updateStatsUI();
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function updateStatsUI() {
+            document.getElementById('move-count').textContent = moveCount;
+            document.getElementById('timer-display').textContent = formatTime(timerSeconds);
+        }
+
+        function showHint(visible) {
+            const overlay = document.getElementById('hint-overlay');
+            overlay.style.opacity = visible ? '1' : '0';
+        }
+
+        function showWinModal() {
+            document.getElementById('win-size').textContent = `${gridSize} × ${gridSize}`;
+            document.getElementById('win-moves').textContent = moveCount;
+            document.getElementById('win-time').textContent = formatTime(timerSeconds);
+
+            const modal = document.getElementById('win-modal');
+            const box = document.getElementById('win-modal-box');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeWinModalAndRestart() {
+            const modal = document.getElementById('win-modal');
+            const box = document.getElementById('win-modal-box');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                shuffleGame();
+            }, 150);
+        }
+
+        // ==========================================
+        // 5. 觸控滑動與鍵盤支援
+        // ==========================================
+        const puzzleGridEl = document.getElementById('puzzle-grid');
+
+        puzzleGridEl.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        puzzleGridEl.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length === 1) {
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                const absX = Math.abs(dx);
+                const absY = Math.abs(dy);
+
+                if (Math.max(absX, absY) > 25) {
+                    if (absX > absY) {
+                        moveEmptyByDirection(0, dx > 0 ? 1 : -1);
+                    } else {
+                        moveEmptyByDirection(dy > 0 ? 1 : -1, 0);
+                    }
+                }
+            }
+        }, { passive: true });
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+                if (e.key === 'ArrowUp') moveEmptyByDirection(-1, 0);
+                if (e.key === 'ArrowDown') moveEmptyByDirection(1, 0);
+                if (e.key === 'ArrowLeft') moveEmptyByDirection(0, -1);
+                if (e.key === 'ArrowRight') moveEmptyByDirection(0, 1);
+            }
+        });
+
+        // 啟動遊戲
+        window.onload = function() {
+            artworkURL = generateCharacterArtworkDataURL();
+            document.getElementById('hint-image').src = artworkURL;
+            setGridSize(3);
+        };
+    </script>
+</body>
+</html>
