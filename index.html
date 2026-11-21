@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cognitive Training Hub (under construction)</title>
+  <title>OT Training Hub (under construction)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -121,7 +121,7 @@
 </head>
 <body>
 
-  <h1>Cognitive Training Hub (under construction)</h1>
+  <h1>OT Training Hub (under construction)</h1>
   <div class="subtitle">Select a brain exercise below to begin</div>
 
   <div class="menu-grid">
@@ -185,6 +185,48 @@
   <div class="note">
     Tip: Keep <strong>index.html</strong>, <strong>memory.html</strong>, <strong>digit.html</strong>, <strong>trail.html</strong>, <strong>stroop.html</strong>, <strong>runner1.html</strong>, <strong>pipe.html</strong>, <strong>neglect.html</strong>, and <strong>sutra.html</strong> together in the same folder.
   </div>
+  
+<!-- Confirmation -->
+<div id="otConfirmModal" style="
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+">
+  <div style="
+    background: #1e1e1e;
+    color: #ffffff;
+    padding: 24px 28px;
+    border-radius: 14px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    border: 1px solid #333;
+  ">
+    <h2 style="color: #00e676; margin-bottom: 12px;">✋ Professional verification</h2>
+    <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px;">
+      Confirm below statement：<br>
+      <strong>「I'm Occupational Therapist and Occupation Therapy is amazing！」</strong>
+    </p>
+    <button onclick="document.getElementById('otConfirmModal').style.display='none'" style="
+      background: #00e676;
+      color: #000000;
+      border: none;
+      padding: 10px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    ">
+      I confirm，strongly agree！
+    </button>
+  </div>
+</div>
 
 </body>
 </html>
