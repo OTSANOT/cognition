@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OT Training Hub</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #f4f7f6; color: #2c3e50; padding: 2rem 1rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 2.5rem; }
+    header h1 { font-size: 2rem; color: #1a5276; margin-bottom: 0.5rem; }
+    header p { color: #5d6d7e; font-size: 1.1rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #e5e8e8;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      border-color: #3498db;
+    }
+    .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .category {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #2980b9;
+      margin-bottom: 0.35rem;
+    }
+    .card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #1c2833; }
+    .card p { font-size: 0.92rem; color: #566573; line-height: 1.45; }
+    .tip {
+      margin-top: 2.5rem;
+      background: #eaf2f8;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: #21618c;
+      line-height: 1.5;
+    }
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>OT Training Hub (under construction)</h1>
+      <p>Select a training below to begin</p>
+    </header>
+
+    <div class="grid">
+      <a href="memory.html" class="card">
+        <div class="icon">🏠</div>
+        <div class="category">Visual Recall</div>
+        <h2>Memory Flash Cards</h2>
+        <p>Match pairs of everyday household items across 4x4, 5x5, or 6x6 grids.</p>
+      </a>
+
+      <a href="digit.html" class="card">
+        <div class="icon">🔢</div>
+        <div class="category">Working Memory</div>
+        <h2>Digit Span</h2>
+        <p>Memorize number sequences and enter them Forward or Backward on the touch numpad.</p>
+      </a>
+
+      <a href="trail.html" class="card">
+        <div class="icon">🔀</div>
+        <div class="category">Cognitive Shifting</div>
+        <h2>Alternating Trail</h2>
+        <p>Connect numbers and letters in alternating order (1 → A → 2 → B...) against the clock.</p>
+      </a>
+
+      <a href="stroop.html" class="card">
+        <div class="icon">🎨</div>
+        <div class="category">Attention & Focus</div>
+        <h2>Stroop Color Focus</h2>
+        <p>Tap the true ink color of each word while ignoring distracting text in a 30-second sprint.</p>
+      </a>
+
+      <a href="runner1.html" class="card">
+        <div class="icon">🏃</div>
+        <div class="category">Executive Control</div>
+        <h2>Monster Runner</h2>
+        <p>Switch lanes and fire at obstacles in a fast-paced 3D-style reaction game.</p>
+      </a>
+
+      <a href="pipe.html" class="card">
+        <div class="icon">💧</div>
+        <div class="category">Spatial Reasoning</div>
+        <h2>Water Pipe Connection</h2>
+        <p>Rotate pipe tiles to build a complete route from the water source to the appliance.</p>
+      </a>
+
+      <a href="neglect.html" class="card">
+        <div class="icon">👀</div>
+        <div class="category">Visual Attention</div>
+        <h2>Visual Neglect Trainer</h2>
+        <p>Practice scanning, line bisection, and cancellation tasks for spatial attention.</p>
+      </a>
+
+      <a href="sutra.html" class="card">
+        <div class="icon">心經</div>
+        <div class="category">Mindful Practice</div>
+        <h2>Sutra Copying</h2>
+        <p>Practice handwritten calligraphy with guided traditional sutra characters.</p>
+      </a>
+
+      <a href="hand2.html" class="card">
+        <div class="icon">✋</div>
+        <div class="category">Motor Control & Coordination</div>
+        <h2>OT Hand Motion Tracker</h2>
+        <p>Use camera-based hand tracking to touch sequential targets (1 → 5) with your index finger.</p>
+      </a>
+
+      <a href="pong.html" class="card">
+        <div class="icon">🏓</div>
+        <div class="category">Visual Tracking & Reflex</div>
+        <h2>Pong</h2>
+        <p>Control the paddle using mouse or arrow keys to track and return the ball against the computer.</p>
+      </a>
+
+      <a href="prospective.html" class="card">
+        <div class="icon">🧠</div>
+        <div class="category">Orientation & Prospective Memory</div>
+        <h2>Kitchen Daily Routine</h2>
+        <p>Verify daily orientation and manage time-based and event-based tasks during kitchen chores.</p>
+      </a>
+
+      <a href="coin.html" class="card">
+        <div class="icon">🪙</div>
+        <div class="category">3D Navigation & Numeracy</div>
+        <h2>3D Coin Collector</h2>
+        <p>Roll the glowing cube to collect spinning gold coins and solve single-digit math challenges.</p>
+      </a>
+    </div>
+
+    <div class="tip">
+      <strong>Tip:</strong> Keep <strong>index-1.html</strong>, <strong>memory.html</strong>, <strong>digit.html</strong>, <strong>trail.html</strong>, <strong>stroop.html</strong>, <strong>runner1.html</strong>, <strong>pipe.html</strong>, <strong>neglect.html</strong>, <strong>sutra.html</strong>, <strong>hand2.html</strong>, <strong>pong.html</strong>, <strong>prospective.html</strong>, and <strong>coin.html</strong> together in the same folder.
+    </div>
+
+    <footer>
+      This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.
+    </footer>
+  </div>
+</body>
+</html>
