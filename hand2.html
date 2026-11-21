@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>OT Hand Motion Tracker - Sequential Targets</title>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      background: #1e1e1e;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      width: 100%;
+      max-width: 720px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+    select, button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    select {
+      background: #2c2c2c;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    button {
+      background: #00e676;
+      color: #000;
+      transition: opacity 0.2s;
+    }
+    button:disabled {
+      background: #555;
+      color: #999;
+      cursor: not-allowed;
+    }
+    #flipBtn {
+      background: #2979ff;
+      color: #fff;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 720px;
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .stat-box {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      color: #00e676;
+      margin-top: 2px;
+    }
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    video {
+      display: none;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      z-index: 10;
+    }
+    .overlay.hidden {
+      display: none;
+    }
+    .overlay h2 {
+      margin-bottom: 8px;
+      color: #00e676;
+    }
+    .overlay p {
+      margin-bottom: 16px;
+      color: #ddd;
+      line-height: 1.5;
+    }
+    .disclaimer {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: #888;
+      text-align: center;
+      max-width: 720px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>✋ OT Hand Motion Tracker</h1>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="durationSelect">時間：</label>
+      <select id="durationSelect">
+        <option value="1">1 分鐘</option>
+        <option value="2">2 分鐘</option>
+        <option value="3" selected>3 分鐘</option>
+        <option value="4">4 分鐘</option>
+        <option value="5">5 分鐘</option>
+        <option value="6">6 分鐘</option>
+        <option value="7">7 分鐘</option>
+        <option value="8">8 分鐘</option>
+        <option value="9">9 分鐘</option>
+        <option value="10">10 分鐘</option>
+      </select>
+    </div>
+    <button id="startBtn" disabled>載入模型中...</button>
+    <button id="flipBtn">🔄 Flip Camera</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div>剩餘時間</div>
+      <div class="stat-value" id="timerDisplay">03:00</div>
+    </div>
+    <div class="stat-box">
+      <div>完成組數 / 目標</div>
+      <div class="stat-value" id="scoreDisplay">0 組 (0)</div>
+    </div>
+    <div class="stat-box">
+      <div>平均反應時間</div>
+      <div class="stat-value" id="rtDisplay">-- ms</div>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <video id="inputVideo" playsinline></video>
+    <canvas id="outputCanvas" width="640" height="480"></canvas>
+
+    <div class="overlay" id="statusOverlay">
+      <h2 id="overlayTitle">Loading AI Hand Model...</h2>
+      <p id="overlayDesc">Initializing MediaPipe Vision Engine...<br>請允許瀏覽器存取鏡頭，並將食指置於鏡頭前依序觸碰 1 → 5。</p>
+      <button id="overlayStartBtn" class="hidden">開始訓練</button>
+    </div>
+  </div>
+
+  <footer class="disclaimer">
+    This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.
+  </footer>
+
+  <script>
+    const videoElement = document.getElementById('inputVideo');
+    const canvasElement = document.getElementById('outputCanvas');
+    const canvasCtx = canvasElement.getContext('2d');
+
+    const durationSelect = document.getElementById('durationSelect');
+    const startBtn = document.getElementById('startBtn');
+    const flipBtn = document.getElementById('flipBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const rtDisplay = document.getElementById('rtDisplay');
+
+    const statusOverlay = document.getElementById('statusOverlay');
+    const overlayTitle = document.getElementById('overlayTitle');
+    const overlayDesc = document.getElementById('overlayDesc');
+    const overlayStartBtn = document.getElementById('overlayStartBtn');
+
+    let isModelReady = false;
+    let isGameRunning = false;
+    let facingMode = 'user';
+    let currentStream = null;
+    let animationFrameId = null;
+
+    let remainingSeconds = 180;
+    let timerInterval = null;
+    let targetsHitTotal = 0;
+    let setsCompleted = 0;
+
+    let targets = [];
+    let nextExpectedNumber = 1;
+    let lastActionTimestamp = 0;
+    let reactionTimes = [];
+    let indexFingerPos = null;
+
+    const TARGET_RADIUS = 34;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    durationSelect.addEventListener('change', () => {
+      if (!isGameRunning) {
+        remainingSeconds = parseInt(durationSelect.value, 10) * 60;
+        timerDisplay.textContent = formatTime(remainingSeconds);
+      }
+    });
+
+    function spawnSequentialTargets() {
+      targets = [];
+      nextExpectedNumber = 1;
+      const padding = TARGET_RADIUS + 25;
+      const width = canvasElement.width;
+      const height = canvasElement.height;
+
+      for (let num = 1; num <= 5; num++) {
+        let valid = false;
+        let x, y;
+        let attempts = 0;
+
+        while (!valid && attempts < 200) {
+          x = padding + Math.random() * (width - padding * 2);
+          y = padding + Math.random() * (height - padding * 2);
+          valid = true;
+
+          for (const t of targets) {
+            const dist = Math.hypot(t.x - x, t.y - y);
+            if (dist < TARGET_RADIUS * 2.6) {
+              valid = false;
+              break;
+            }
+          }
+          attempts++;
+        }
+
+        targets.push({
+          number: num,
+          x: x,
+          y: y,
+          hit: false
+        });
+      }
+      lastActionTimestamp = performance.now();
+    }
+
+    function startGame() {
+      if (!isModelReady) return;
+
+      isGameRunning = true;
+      targetsHitTotal = 0;
+      setsCompleted = 0;
+      reactionTimes = [];
+      remainingSeconds = parseInt(durationSelect.value, 10) * 60;
+
+      timerDisplay.textContent = formatTime(remainingSeconds);
+      scoreDisplay.textContent = `0 組 (0)`;
+      rtDisplay.textContent = `-- ms`;
+
+      statusOverlay.classList.add('hidden');
+      durationSelect.disabled = true;
+      startBtn.textContent = '重新開始';
+
+      spawnSequentialTargets();
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        remainingSeconds--;
+        timerDisplay.textContent = formatTime(remainingSeconds);
+
+        if (remainingSeconds <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      isGameRunning = false;
+      clearInterval(timerInterval);
+      durationSelect.disabled = false;
+
+      const avgRt = reactionTimes.length > 0
+        ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
+        : 0;
+
+      overlayTitle.textContent = '⏱️ 訓練時間結束！';
+      overlayDesc.innerHTML = `
+        完成組數：<strong>${setsCompleted} 組</strong>（共擊中 ${targetsHitTotal} 個目標）<br>
+        平均反應時間：<strong>${avgRt > 0 ? avgRt + ' ms' : '無紀錄'}</strong>
+      `;
+      overlayStartBtn.textContent = '再玩一次';
+      overlayStartBtn.classList.remove('hidden');
+      statusOverlay.classList.remove('hidden');
+    }
+
+    startBtn.addEventListener('click', startGame);
+    overlayStartBtn.addEventListener('click', startGame);
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.65,
+      minTrackingConfidence: 0.65
+    });
+
+    hands.onResults(onHandsResults);
+
+    function onHandsResults(results) {
+      if (!isModelReady) {
+        isModelReady = true;
+        startBtn.disabled = false;
+        startBtn.textContent = '開始訓練';
+        overlayTitle.textContent = '準備就緒';
+        overlayDesc.textContent = '請選擇訓練時間，並依序用食指觸碰畫面上的 1 → 2 → 3 → 4 → 5。';
+        overlayStartBtn.classList.remove('hidden');
+      }
+
+      const width = canvasElement.width;
+      const height = canvasElement.height;
+
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, width, height);
+
+      if (facingMode === 'user') {
+        canvasCtx.translate(width, 0);
+        canvasCtx.scale(-1, 1);
+      }
+      canvasCtx.drawImage(results.image, 0, 0, width, height);
+      canvasCtx.restore();
+
+      indexFingerPos = null;
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const indexTip = results.multiHandLandmarks[0][8];
+        let x = indexTip.x * width;
+        let y = indexTip.y * height;
+
+        if (facingMode === 'user') {
+          x = width - x;
+        }
+        indexFingerPos = { x, y };
+      }
+
+      if (isGameRunning) {
+        checkTargetCollision();
+        drawTargets();
+      }
+
+      if (indexFingerPos) {
+        canvasCtx.beginPath();
+        canvasCtx.arc(indexFingerPos.x, indexFingerPos.y, 14, 0, 2 * Math.PI);
+        canvasCtx.fillStyle = 'rgba(0, 230, 118, 0.85)';
+        canvasCtx.fill();
+        canvasCtx.lineWidth = 3;
+        canvasCtx.strokeStyle = '#ffffff';
+        canvasCtx.stroke();
+      }
+    }
+
+    function checkTargetCollision() {
+      if (!indexFingerPos) return;
+
+      const currentTarget = targets.find(t => t.number === nextExpectedNumber && !t.hit);
+      if (!currentTarget) return;
+
+      const dist = Math.hypot(indexFingerPos.x - currentTarget.x, indexFingerPos.y - currentTarget.y);
+
+      if (dist <= TARGET_RADIUS + 10) {
+        const now = performance.now();
+        const rt = Math.round(now - lastActionTimestamp);
+        lastActionTimestamp = now;
+
+        reactionTimes.push(rt);
+        currentTarget.hit = true;
+        targetsHitTotal++;
+        nextExpectedNumber++;
+
+        const avgRt = Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length);
+        rtDisplay.textContent = `${avgRt} ms`;
+
+        if (nextExpectedNumber > 5) {
+          setsCompleted++;
+          scoreDisplay.textContent = `${setsCompleted} 組 (${targetsHitTotal})`;
+          spawnSequentialTargets();
+        } else {
+          scoreDisplay.textContent = `${setsCompleted} 組 (${targetsHitTotal})`;
+        }
+      }
+    }
+
+    function drawTargets() {
+      for (const t of targets) {
+        if (t.hit) continue;
+
+        const isNext = (t.number === nextExpectedNumber);
+
+        canvasCtx.beginPath();
+        canvasCtx.arc(t.x, t.y, TARGET_RADIUS, 0, 2 * Math.PI);
+
+        if (isNext) {
+          canvasCtx.fillStyle = 'rgba(255, 193, 7, 0.9)';
+          canvasCtx.shadowColor = '#ffc107';
+          canvasCtx.shadowBlur = 18;
+        } else {
+          canvasCtx.fillStyle = 'rgba(41, 121, 255, 0.65)';
+          canvasCtx.shadowBlur = 0;
+        }
+
+        canvasCtx.fill();
+        canvasCtx.shadowBlur = 0;
+        canvasCtx.lineWidth = 3;
+        canvasCtx.strokeStyle = '#ffffff';
+        canvasCtx.stroke();
+
+        canvasCtx.fillStyle = isNext ? '#000000' : '#ffffff';
+        canvasCtx.font = 'bold 26px sans-serif';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.textBaseline = 'middle';
+        canvasCtx.fillText(t.number.toString(), t.x, t.y);
+      }
+    }
+
+    async function startCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      try {
+        currentStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: facingMode,
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          },
+          audio: false
+        });
+        videoElement.srcObject = currentStream;
+        await videoElement.play();
+
+        async function processFrame() {
+          if (videoElement.readyState >= 2) {
+            await hands.send({ image: videoElement });
+          }
+          animationFrameId = requestAnimationFrame(processFrame);
+        }
+        processFrame();
+      } catch (err) {
+        overlayTitle.textContent = '無法開啟鏡頭';
+        overlayDesc.textContent = '請確認瀏覽器已授予相機權限，或嘗試重新整理頁面。';
+      }
+    }
+
+    flipBtn.addEventListener('click', () => {
+      facingMode = (facingMode === 'user') ? 'environment' : 'user';
+      startCamera();
+    });
+
+    startCamera();
+  </script>
+</body>
+</html>
